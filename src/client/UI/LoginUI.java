@@ -5,11 +5,8 @@ import java.awt.event.*;
 import javax.swing.*;
 
 import beans.UserLoginBean;
+import client.net.up.LoginTool;
 import client.thread.LoginThread;
-import client.utils.LoginUtils;
-
-
-
 
 public class LoginUI {
 	public static enum LoginCommandCode {CONFIRM,REST}
@@ -81,6 +78,7 @@ public class LoginUI {
 		serverNameSelector.addItem("");
 		serverNameSelector.addItem("163");
 		serverNameSelector.addItem("QQ");
+		serverNameSelector.addItem("box");
 		confirmButton.setActionCommand(LoginCommandCode.CONFIRM.toString());
 		resetButton.setActionCommand(LoginCommandCode.REST.toString());
 	}
@@ -134,9 +132,9 @@ public class LoginUI {
 			if (!informationValid()) {
 				return;
 			}
-			LoginUtils.loginToServer(loginInformation);
-			if (LoginUtils.loginServerSucceed(loginInformation)) {
-				LoginUtils.selectSendOrReceive(LoginUI.this);
+			boolean loginSucceed = LoginTool.loginToServer(loginInformation);
+			if (loginSucceed) {
+				LoginTool.selectSendOrReceive(LoginUI.this);
 			} else {
 				JOptionPane.showMessageDialog(frame, (String)"登录失败.请确认用户名和密码填写正确并且网络连接正常.", "错误", JOptionPane.WARNING_MESSAGE);
 			}
@@ -147,7 +145,7 @@ public class LoginUI {
 				JOptionPane.showMessageDialog(frame, (String)"请选择邮件服务器.", "错误", JOptionPane.WARNING_MESSAGE);
 				return false;
 			}
-			if (!LoginUtils.loginInformationValid(loginInformation)) {
+			if (!LoginTool.loginInformationValid(loginInformation)) {
 				JOptionPane.showMessageDialog(frame, (String)"用户名和密码不能为空,请检查后重新输入.", "错误", JOptionPane.WARNING_MESSAGE);
 				return false;
 			}
@@ -156,8 +154,12 @@ public class LoginUI {
 	}
 
 	private void fillLoginInformation() {
-		loginInformation.setSmtpServerName(getSmtpServerNameFromSelector());
-		loginInformation.setPop3ServerName(getPop3ServerNameFromSelector());
+		if (((String)serverNameSelector.getSelectedItem()).equalsIgnoreCase("box")) {
+			loginInformation.setLocalServerEnabled(true);
+		} else {
+			loginInformation.setSmtpServerName(getSmtpServerNameFromSelector());
+			loginInformation.setPop3ServerName(getPop3ServerNameFromSelector());
+		}
 		loginInformation.setUserName(getUserNameFromTextField());
 		loginInformation.setPassword(getPasswordFromTextField());
 	}

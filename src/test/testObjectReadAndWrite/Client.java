@@ -49,8 +49,7 @@ public class Client {
 				ByteBuffer buffer = ByteBuffer.allocateDirect(1024);
 				int size = 0;
 				while ((size = channel.read(buffer)) != -1) {
-					buffer.flip();//rewind
-					//buffer.limit(size);
+					buffer.flip();
 					socketChannel.write(buffer);
 					buffer.clear();
 				}
@@ -81,11 +80,8 @@ public class Client {
 				int size = 0;
 				while ((size = socketChannel.read(buffer)) != -1) {
 					buffer.flip();
-					//if (size > 0) {
-						//buffer.limit(size);
-						channel.write(buffer);
-						buffer.clear();
-					//}
+					channel.write(buffer);
+					buffer.clear();
 				}
 			} finally {
 				try {

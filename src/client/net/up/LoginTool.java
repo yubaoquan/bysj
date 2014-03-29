@@ -1,10 +1,9 @@
-package client.utils;
+package client.net.up;
 
 import client.UI.*;
 import beans.UserLoginBean;
-import client.net.Transmitter;
 
-public class LoginUtils {
+public class LoginTool {
 
 	public static boolean loginInformationValid(UserLoginBean loginInformation) {
 		if (loginInformation == null) {
@@ -25,8 +24,8 @@ public class LoginUtils {
 		new MainTargetSelectingUI(li).initUI();
 	}
 
-	public static void loginToServer(UserLoginBean li) {
-		Transmitter.getInstance(li).loginToServer();
+	public static boolean loginToServer(UserLoginBean li) {
+		return Transmitter.getInstance(li).loginToServer();
 	}
 	
 	public static boolean loginServerSucceed(UserLoginBean li) {

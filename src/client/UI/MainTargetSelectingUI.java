@@ -5,7 +5,7 @@ import java.awt.event.*;
 import javax.swing.*;
 
 import beans.UserLoginBean;
-import client.net.ReceiveMail;
+import client.net.down.ReceiveMail;
 
 
 

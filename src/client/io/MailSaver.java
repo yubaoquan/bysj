@@ -10,7 +10,7 @@ import javax.mail.Multipart;
 import javax.mail.Part;
 import javax.mail.internet.MimeUtility;
 
-import client.net.ReceiveMail;
+import client.net.down.ReceiveMail;
 
 
 public class MailSaver {

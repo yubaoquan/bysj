@@ -9,7 +9,7 @@ import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Part;
 
-import client.net.ReceiveMail;
+import client.net.down.ReceiveMail;
 
 
 public class FileWriterSaver {

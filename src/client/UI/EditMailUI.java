@@ -22,8 +22,8 @@ import javax.swing.border.MatteBorder;
 
 import beans.UserLoginBean;
 import beans.MailBean;
-import client.net.Transmitter;
-import client.utils.LoginUtils;
+import client.net.up.LoginTool;
+import client.net.up.Transmitter;
 
 
 

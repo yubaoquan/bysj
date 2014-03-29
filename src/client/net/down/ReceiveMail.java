@@ -1,4 +1,4 @@
-package client.net;
+package client.net.down;
 
 
 import java.io.File;

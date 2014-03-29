@@ -1,19 +1,21 @@
 package server;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.nio.channels.SocketChannel;
+import java.util.Iterator;
+import java.util.Set;
+
+import util.Util;
 
 public class RequestThread implements Runnable{
-	private InputStream is = null;
-	private OutputStream os = null;
-	
-	private DataInputStream dis = null;
-    private DataOutputStream dos = null;
-    
+    private Selector selector = null;
+	private SocketChannel socketChannel = null;
+    private ByteBuffer buffer = null;
     private DAO dao = null;
+    
     private boolean userConnected = false;
     private static final int USER_AUTHENTICATION = 0;
     private static final int LIST_MAILS = 1;
@@ -26,34 +28,75 @@ public class RequestThread implements Runnable{
    // private static final int 
    // private static final int 
    // private static final int 
-	public RequestThread(InputStream is, OutputStream os, DAO dao) {
-		this.is = is;
-		this.dis = new DataInputStream(is);
-		this.os = os;
-		this.dos = new DataOutputStream(os);
-		this.dao = dao;
-	}
-
-	@Override
-	public void run() {
-		 int operationCode;
+	public RequestThread(SocketChannel channel) {
+		socketChannel = channel;
+		buffer = ByteBuffer.allocateDirect(1024);
 		try {
-			operationCode = dis.readInt();
-			System.out.println("operationCode: " + operationCode);
-            operateByOperationCode(operationCode);
+			selector = Selector.open();
+			
+			//key.interestOps(SelectionKey.OP_READ);
+			socketChannel.register(selector, SelectionKey.OP_READ);
+			
+			
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
+
+	public RequestThread(SelectionKey key) {
+		try {
+			selector = Selector.open();
+			
+			//key.interestOps(SelectionKey.OP_READ);
+			socketChannel.register(selector, SelectionKey.OP_READ);
+			
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
 	
-	private void operateByOperationCode(int opationCode) throws Exception {
-		switch(opationCode) {
+	@Override
+	public void run() {
+		try {
+			while (selector.select() > 0) {
+				Set<SelectionKey> selectionKeys = selector.selectedKeys();
+				Util.println("size: " + selectionKeys.size());
+				Iterator<SelectionKey> it = selectionKeys.iterator();
+				while (it.hasNext()) {
+					SelectionKey selectionKey = it.next();
+					it.remove();
+					if (selectionKey.isReadable()) {
+						SocketChannel channel = (SocketChannel) selectionKey.channel();
+						ByteBuffer buffer = ByteBuffer.allocate(50);
+						System.out.println("read...");
+
+						channel.read(buffer);
+
+						buffer.flip();
+						byte[] array = new byte[1024];
+						buffer.get(array, 0, buffer.remaining());
+						System.out.println("read:" + new String(array));
+						//channel.socket().close();
+						return;
+					}
+				}
+			}
+			
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void operateByRequestString(String[] requestString) throws Exception {
+		int operationCode = Integer.parseInt(requestString[0]);
+		System.out.println("operationCode: " + operationCode);
+		switch(operationCode) {
 			case USER_AUTHENTICATION:
-					userLogin();
+					userLogin(requestString[1], requestString[2]);
 				break;
 			case LIST_MAILS:
 				if(userConnected) {
@@ -65,16 +108,16 @@ public class RequestThread implements Runnable{
 		}
 	}
 
-	private void userLogin() {
+	private void userLogin(String username, String password) {
 		try {
-			String username = dis.readUTF();
-			String password = dis.readUTF();
+			buffer.clear();
 			if(userLoginOK(username, password)) {
-				dos.writeBoolean(true);
+				buffer.put("true".getBytes());
 				userConnected = true;
 			} else {
-				dos.writeBoolean(false);
+				buffer.put("false".getBytes());
 			}
+			socketChannel.write(buffer);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

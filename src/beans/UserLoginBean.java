@@ -6,6 +6,7 @@ public class UserLoginBean {
 	private String smtpServerName;
 	private String userName;
 	private String password;
+	private boolean localServerEnabled = false;
 	
 	public UserLoginBean() {}
 	
@@ -39,6 +40,14 @@ public class UserLoginBean {
 
 	public void setPop3ServerName(String pop3ServerName) {
 		this.pop3ServerName = pop3ServerName;
+	}
+
+	public boolean isLocalServerEnabled() {
+		return localServerEnabled;
+	}
+
+	public void setLocalServerEnabled(boolean localServerEnabled) {
+		this.localServerEnabled = localServerEnabled;
 	}
 	
 }
