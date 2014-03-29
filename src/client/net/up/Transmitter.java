@@ -2,10 +2,9 @@ package client.net.up;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.net.SocketAddress;
-import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
@@ -24,6 +23,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import util.Util;
+import beans.Constant;
 import beans.MailBean;
 import beans.UserLoginBean;
 
@@ -39,9 +39,11 @@ public class Transmitter {
 	private static Transmitter transmitter = null;
 	private boolean sendSucceed = false;
 	private MimeMessage msg;
-	private Selector selector = null;
+	private Selector initSelector = null;
+	private Selector selectorForRead = null;
+	private Selector selectorForWrite = null;
 	private SocketChannel socketChannel = null;
-	private ByteBuffer byteBuffer = null;
+	private ByteBuffer buffer = null;
 	
 	public static Transmitter getInstance(UserLoginBean loginInformation) {
 		if (Transmitter.transmitter == null) {
@@ -91,14 +93,8 @@ public class Transmitter {
 	private boolean loginToLocalServer() {
 		boolean loginSucceed = false;
 		try {
-			SocketAddress socketAddress = new InetSocketAddress("localhost", 8888);
-			socketChannel = SocketChannel.open();
-			socketChannel.configureBlocking(false);
-			selector = Selector.open();
-			socketChannel.register(selector, SelectionKey.OP_CONNECT);
-			socketChannel.connect(socketAddress);
-			selector.select();
-			Set<SelectionKey> selectionKeys = selector.selectedKeys();
+			initConnect();
+			Set<SelectionKey> selectionKeys = initSelector.selectedKeys();
 			Iterator<SelectionKey> it = selectionKeys.iterator();
 			if (it.hasNext()) {
 				SelectionKey selectionKey = it.next();
@@ -110,40 +106,91 @@ public class Transmitter {
 					if (socketChannel.isConnectionPending()) {
 						socketChannel.finishConnect();
 						System.out.println("完成连接!");
-
-						ByteBuffer buffer = ByteBuffer.allocateDirect(1024);
-						String request = "1" + " " + loginInformation.getUserName().trim() + " " + loginInformation.getPassword().trim();
-						buffer = ByteBuffer.wrap(request.getBytes());
-						socketChannel.write(buffer);
-						buffer.clear();
+						initReadAndWriteSelector();
+						
+						String requestString = Constant.USER_AUTHENTICATION + " " + loginInformation.getUserName().trim() + " " + loginInformation.getPassword().trim();
+						sendRequest(requestString);
 						
 						System.out.println("send finished!");
-						socketChannel.socket().close();
-						socketChannel.close();
-						System.exit(0);
-						socketChannel.register(selector, SelectionKey.OP_READ);
-					
+						String responseString = receiveResponse();
+						if (responseString.equals(Constant.LOGIN_SUCCEED)) {
+							loginSucceed = true;
+						}
 					}
 				}
-
 			}
-			selectionKeys.clear();
-			
-			
-			/*System.out.println(loginResult);
-			if (loginResult.equals("true")) {
-				loginSucceed = true;
-			}*/
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-			return loginSucceed;
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			return loginSucceed;
 		}
 		return loginSucceed;
 	}
 
+	private void initConnect() throws IOException, ClosedChannelException {
+		SocketAddress socketAddress = new InetSocketAddress(Constant.SERVER_HOSTNAME, Constant.SERVER_PORT);
+		socketChannel = SocketChannel.open();
+		socketChannel.configureBlocking(false);
+		initSelector = Selector.open();
+		socketChannel.register(initSelector, SelectionKey.OP_CONNECT);
+		
+		socketChannel.connect(socketAddress);
+		initSelector.select();
+	}
+
+	private void initReadAndWriteSelector() throws IOException, ClosedChannelException {
+		selectorForRead = Selector.open();
+		selectorForWrite = Selector.open();
+		
+		socketChannel.register(selectorForRead, SelectionKey.OP_READ);
+		socketChannel.register(selectorForWrite, SelectionKey.OP_WRITE);
+	}
+
+	private void sendRequest(String requestString) throws Exception {
+		Util.println("send request: " + requestString);
+		while (selectorForWrite.select() > 0) {
+			Set<SelectionKey> selectionKeys = selectorForWrite.selectedKeys();
+			Iterator<SelectionKey> it = selectionKeys.iterator();
+			while (it.hasNext()) {
+				SelectionKey selectionKey = it.next();
+				it.remove();
+				if (selectionKey.isWritable()) {
+					SocketChannel channel = (SocketChannel) selectionKey.channel();
+					buffer = ByteBuffer.wrap(requestString.getBytes());
+					System.out.println("write...");
+					channel.write(buffer);
+					System.out.println("write:" + requestString);
+					return;
+				}
+			}
+		}
+	}
+	
+	private String receiveResponse() throws IOException, Exception {
+		String responseString = null;
+		while (selectorForRead.select() > 0) {
+			Set<SelectionKey> selectionKeys = selectorForRead.selectedKeys();
+			Iterator<SelectionKey> it = selectionKeys.iterator();
+			while (it.hasNext()) {
+				SelectionKey selectionKey = it.next();
+				it.remove();
+				if (selectionKey.isReadable()) {
+					SocketChannel channel = (SocketChannel) selectionKey.channel();
+					buffer = ByteBuffer.allocate(50);
+					System.out.println("read response...");
+
+					channel.read(buffer);
+
+					buffer.flip();
+					byte[] array = new byte[1024];
+					buffer.get(array, 0, buffer.remaining());
+					responseString = new String(array).trim();
+					System.out.println("response:" + responseString);
+					return responseString;
+				}
+			}
+		}
+		return responseString;
+	}
 	public void sendMailToLocalServer(MailBean mailBean) {
 		
 	}
@@ -195,83 +242,17 @@ public class Transmitter {
 		return sendSucceed;
 	}
 	
-	/**
-	 * @param args
-	 */
-	
-	private void listen() throws Exception {
-		while (true) {
-			// 选择一组键，其相应的通道已为 I/O 操作准备就绪。
-			// 此方法执行处于阻塞模式的选择操作。
-			selector.select();
-			Set<SelectionKey> selectionKeys = selector.selectedKeys();
-			Iterator<SelectionKey> it = selectionKeys.iterator();
-			while (it.hasNext()) {
-				SelectionKey selectionKey = it.next();
-				handleKey(selectionKey);
-
-			}
-			selectionKeys.clear();
-		}
-	}
-	
-	private void handleKey(SelectionKey selectionKey) throws Exception {
-		if (selectionKey.isConnectable()) {
-			System.out.println("client connect");
-			socketChannel = (SocketChannel) selectionKey.channel();
-			// 判断此通道上是否正在进行连接操作。
-			// 完成套接字通道的连接过程。
-			if (socketChannel.isConnectionPending()) {
-				socketChannel.finishConnect();
-				System.out.println("完成连接!");
-				/*byteBuffer.clear();
-				byteBuffer.put("Hello,Server".getBytes());
-				byteBuffer.flip();
-				socketChannel.write(byteBuffer);*/
-				byteBuffer = ByteBuffer.wrap("你好，世界 | こんにちは、世界中のみなさん".getBytes("UTF-8"));
-				socketChannel.write(byteBuffer);
-				byteBuffer.clear();
-				System.out.println("send finished!");
-				socketChannel.register(selector, SelectionKey.OP_READ);
-			}
-		} else if (selectionKey.isReadable()) {
-			socketChannel = (SocketChannel) selectionKey.channel();
-			// 将缓冲区清空以备下次读取
-			byteBuffer.clear();
-			
-			StringBuffer stringBuffer = new StringBuffer();
-			int size = 0;
-			while ((size = socketChannel.read(byteBuffer)) > 0) {
-				byteBuffer.flip();
-				byte[] array = new byte[1024];
-				byteBuffer.get(array, 0, size);
-				stringBuffer.append(new String(array));
-				byteBuffer.clear();
-			}
-			System.out.println("receive: " + stringBuffer);
-			socketChannel.register(selector, SelectionKey.OP_WRITE);
-		} else if (selectionKey.isWritable()) {
-			byteBuffer.clear();
-			socketChannel = (SocketChannel) selectionKey.channel();
-			byteBuffer = ByteBuffer.wrap("再次发送数据".getBytes("UTF-8"));
-			int size = socketChannel.write(byteBuffer);
-			byteBuffer.clear();
-			byte[] array = new byte[1024];
-			byteBuffer.get(array, 0, size);
-			String string = new String(array).trim();
-			System.out.println("客户端向服务器端发送数据--：" + string);
-			socketChannel.register(selector, SelectionKey.OP_READ);
-			socketChannel.socket().close();
-			socketChannel.close();
-			System.exit(0);
-		}
-	}
-	
 	public static void main(String[] args) {
 		UserLoginBean li = new UserLoginBean();
-		li.setUserName("username2");
+		boolean result = false;
+		/*li.setUserName("username2");
 		li.setPassword("password2");
-		new Transmitter(li).loginToLocalServer();
+		boolean result = new Transmitter(li).loginToLocalServer();
+		Util.println("result: " + result);*/
+		li.setUserName("admin");
+		li.setPassword("admin");
+		result = new Transmitter(li).loginToLocalServer();
+		Util.println("result: " + result);
 
 	}
 }

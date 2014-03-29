@@ -15,6 +15,9 @@ public class DAO {
 	PreparedStatement stmt = null;
 	Connection conn = null;
 	
+	public DAO() {
+		connect();
+	}
 	public void connect() {
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
@@ -77,7 +80,7 @@ public class DAO {
 		return false;
 	}
 	
-	public boolean usernameAndPasswordValid(String username, String password) {
+	public boolean usernameAndPasswordExists(String username, String password) {
 		String findPasswordByUsername = "select password from user where username = ?";
 		try {
 			stmt = conn.prepareStatement(findPasswordByUsername);

@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import util.Util;
+import beans.Constant;
 import beans.MsgBean;
 
 public class Server {
@@ -35,7 +36,7 @@ public class Server {
 		try {
 			selector = Selector.open();
 			serverSocketChannel = ServerSocketChannel.open();
-			serverSocketChannel.bind(new InetSocketAddress(8888));
+			serverSocketChannel.bind(new InetSocketAddress(Constant.SERVER_PORT));
 			serverSocketChannel.configureBlocking(false);
 			serverSocketChannel.socket().setReuseAddress(true);
 			serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
@@ -85,60 +86,6 @@ public class Server {
 				}
 			}
 			
-		}
-	}
-
-	private static void handleKey(SelectionKey selectionKey) throws Exception {
-		SocketChannel clientSocketChannel = null;
-		ByteBuffer byteBuffer = ByteBuffer.allocateDirect(1024);
-		if (selectionKey.isAcceptable()) {
-			System.out.println("client connect");
-			serverSocketChannel = (ServerSocketChannel) selectionKey.channel();
-			clientSocketChannel = serverSocketChannel.accept();
-			clientSocketChannel.configureBlocking(false);
-			// clientSocketChannel = (SocketChannel) selectionKey.channel();
-			// 判断此通道上是否正在进行连接操作。
-			// 完成套接字通道的连接过程。
-			if (clientSocketChannel.isConnectionPending()) {
-				clientSocketChannel.finishConnect();
-				System.out.println("完成连接!");
-				clientSocketChannel.register(selector, SelectionKey.OP_READ);
-			}
-		}
-		// ---------------------
-		else if (selectionKey.isReadable()) {
-			Util.println("readable");
-			clientSocketChannel = (SocketChannel) selectionKey.channel();
-			StringBuffer stringBuffer = new StringBuffer();
-			int size = 0;
-			byteBuffer = ByteBuffer.allocateDirect(1024);
-			while ((size = clientSocketChannel.read(byteBuffer)) > 0) {
-				System.out.println("size: " + size);
-				byteBuffer.flip();
-				byte[] array = new byte[1024];
-				byteBuffer.get(array, 0, byteBuffer.remaining());
-				stringBuffer.append(new String(array).trim());
-				Util.print(stringBuffer);
-
-				byteBuffer.clear();
-				byteBuffer = ByteBuffer.wrap("true".getBytes());
-				// --------------------------------
-				clientSocketChannel.socket().shutdownOutput();
-				clientSocketChannel.close();
-				System.exit(0);
-				// --------------------------
-			}
-			clientSocketChannel.register(selector, SelectionKey.OP_WRITE);
-		} else if (selectionKey.isWritable()) {
-			Util.println("writable");
-			byteBuffer.clear();
-			byteBuffer = ByteBuffer.wrap("收到消息!".getBytes("UTF-8"));
-			clientSocketChannel.write(byteBuffer);
-			byteBuffer.clear();
-			clientSocketChannel.register(selector, SelectionKey.OP_READ);
-
-		} else {
-			Util.println("wtf");
 		}
 	}
 
