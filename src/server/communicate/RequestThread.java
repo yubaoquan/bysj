@@ -1,4 +1,4 @@
-package server;
+package server.communicate;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -9,6 +9,8 @@ import java.util.Iterator;
 import java.util.Set;
 
 import beans.Constant;
+import server.DAO.DAO;
+import server.DAO.DAOFactory;
 import util.Util;
 
 public class RequestThread implements Runnable {
@@ -16,7 +18,7 @@ public class RequestThread implements Runnable {
 	private Selector selectorForWrite = null;
 	private SocketChannel socketChannel = null;
 	private ByteBuffer buffer = null;
-	private DAO dao = null;
+	private DAO dao = DAOFactory.getDAOInstance();
 
 	private boolean userConnected = false;
 
@@ -131,6 +133,6 @@ public class RequestThread implements Runnable {
 	}
 
 	public DAO getDAO() {
-		return new DAO();
+		return dao;
 	}
 }

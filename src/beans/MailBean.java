@@ -13,6 +13,8 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimeUtility;
 
+import util.Util;
+
 public class MailBean {
 
 	//this fields below are used for mail servers on the internet
@@ -28,6 +30,9 @@ public class MailBean {
 	private String sender;
 	private String addressee;
 	private Timestamp sendTime;
+	private String attachment1;
+	private String attachment2;
+	private String attachment3;
 	
 	public MailBean() {
 		this.multipart = new MimeMultipart();
@@ -84,11 +89,7 @@ public class MailBean {
 					System.out.println("null pointer");
 				}
 				this.extraItemCounter++;
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (MessagingException e) {
-				// TODO Auto-generated catch block
+			}  catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
@@ -124,7 +125,6 @@ public class MailBean {
 			try {
 				multipart.addBodyPart(this.extraItems[i]);
 			} catch (MessagingException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -152,5 +152,41 @@ public class MailBean {
 
 	public void setSendTime(Timestamp sendTime) {
 		this.sendTime = sendTime;
+	}
+
+	public String getAttachment1() {
+		return attachment1;
+	}
+
+	public void setAttachment1(String attachment1) {
+		this.attachment1 = attachment1;
+	}
+
+	public String getAttachment2() {
+		return attachment2;
+	}
+
+	public void setAttachment2(String attachment2) {
+		this.attachment2 = attachment2;
+	}
+
+	public String getAttachment3() {
+		return attachment3;
+	}
+
+	public void setAttachment3(String attachment3) {
+		this.attachment3 = attachment3;
+	}
+	
+	public void showPropertiesForLocalServer() {
+		Util.println("sender: " + this.getSender());
+		Util.println("addressee: " + this.getAddressee());
+		Util.println("subject: " + this.getSubject());
+		Util.println("sender: " + this.getSender());
+		Util.println("content: " + this.getText());
+		Util.println("attachment 1 : " + this.getAttachment1());
+		Util.println("attachment 2 : " + this.getAttachment2());
+		Util.println("attachment 3 : " + this.getAttachment3());
+		
 	}
 }

@@ -6,7 +6,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import server.DAO;
+import server.DAO.DAO;
 
 public class TestDAO {
 
