@@ -17,14 +17,22 @@ public class MailURLLabel extends JLabel implements MouseListener {
 	private static final long serialVersionUID = 1L;
 	private int mailID;
 	private String mailSubject;
+	private MailBean mail;
+	private MailListUI parent;
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 
 	}
 
+	public MailURLLabel(MailBean mail, MailListUI parent) {
+		this(mail);
+		this.parent = parent;
+	}
+	
 	public MailURLLabel(MailBean mail) {
 		this(mail.getId(), mail.getSubject());
+		this.mail = mail;
 	}
 	
 	public MailURLLabel(int id, String subject) {
@@ -40,7 +48,7 @@ public class MailURLLabel extends JLabel implements MouseListener {
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		System.out.println("id: " + mailID + " subject: " + mailSubject);
-
+		new MailDetailViewUI(mail, parent).launch();
 	}
 
 	@Override

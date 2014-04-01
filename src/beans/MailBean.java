@@ -192,6 +192,7 @@ public class MailBean {
 	}
 	
 	public void showPropertiesForLocalServer() {
+		Util.println("id: " + this.getId());
 		Util.println("sender: " + this.getSender());
 		Util.println("addressee: " + this.getAddressee());
 		Util.println("subject: " + this.getSubject());

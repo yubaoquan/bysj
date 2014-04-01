@@ -186,8 +186,10 @@ public class DAO {
 		for (Map.Entry<Integer, String> m : result.entrySet()) {
 			Util.println("id: " + m.getKey() + " subject: " + m.getValue());
 		}*/
-		MailBean mb = dao.findMailDetail(1);
-		mb.showPropertiesForLocalServer();
+		/*MailBean mb = dao.findMailDetail(1);
+		mb.showPropertiesForLocalServer();*/
+		System.out.println(dao.userExists("admin"));
+		System.out.println(dao.userExists("admin2"));
 	}
 
 }

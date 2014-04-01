@@ -180,7 +180,7 @@ public class MailDetailViewUI extends JFrame {
 		List<MailURLLabel> list = new ArrayList<>();
 		list.add(mailLabel);
 		MailListUI parent = new MailListUI(list);
-		new MailDetailViewUI(mail, parent).launch();;
+		new MailDetailViewUI(mail, parent).launch();
 
 	}
 
