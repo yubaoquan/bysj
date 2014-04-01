@@ -206,7 +206,7 @@ public class Transmitter {
 			msg.setFrom(fromAddress);
 			msg.setSubject(mailBean.getSubject());
 			msg.setText(mailBean.getText());
-			if (mailBean.getExtraItemsAmount() > 0) {
+			if (mailBean.getAttachmentsAmount() > 0) {
 				msg.setContent(mailBean.getMutipart());
 			}
 			msg.setSentDate(new Date());

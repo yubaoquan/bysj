@@ -36,8 +36,6 @@ public class EditMailUI {
 	private MailBean mail = new MailBean();
 	private EditMailUIMonitor editMailUIMonitor = new EditMailUIMonitor();
 	private UserLoginBean loginInformation;
-
-	private String senderName;
 	private JFrame frame = new JFrame("编辑邮件内容");
 
 	private JPanel mainPanel = new JPanel();
@@ -54,21 +52,6 @@ public class EditMailUI {
 	private JPanel centerSouthCenterPanel = new JPanel();
 	private JPanel centerSouthEastPanel = new JPanel();
 
-	private BorderLayout frameLayout = new BorderLayout();
-	private BorderLayout mainPanelLayout = new BorderLayout();
-
-	private BorderLayout senderPanelLayout = new BorderLayout();
-	private BorderLayout receiverPanelLayout = new BorderLayout();
-
-	private BorderLayout centerPanelLayout = new BorderLayout();
-	private BorderLayout centerNorthPanelLayout = new BorderLayout();
-	private FlowLayout southPanelLayout = new FlowLayout();
-	private BorderLayout centerSouthPanelLayout = new BorderLayout();
-	private FlowLayout centerSouthWestPanelLayout = new FlowLayout();
-	private FlowLayout centerSouthCenterPanelLayout = new FlowLayout();
-	private FlowLayout centerSouthEastPanelLayout = new FlowLayout();
-	private GridLayout northPanelLayout = new GridLayout(2, 1);
-
 	private JLabel senderLabel = new JLabel("发件人:             ");
 	private JTextField senderNameTextField = new JTextField();
 	private JLabel receiverLabel = new JLabel("收件人:             ");
@@ -83,107 +66,105 @@ public class EditMailUI {
 	private JLabel extraItemNameLabel = new JLabel("附件:");
 	private JButton sendButton = new JButton("发送");
 
-	public EditMailUI(String senderName) {
-		this.senderName = senderName;
-	}
-
 	public EditMailUI(UserLoginBean li) {
-		this.loginInformation = li;
+		loginInformation = li;
 	}
 
 	public void launch() {
-		this.intiUI();
-		this.frame.setVisible(true);
+		intiUI();
+		frame.setVisible(true);
 	}
 
 	private void intiUI() {
-		this.setAttributes();
-		this.addComponents();
+		setAttributes();
+		addComponents();
+		
 	}
 
 	private void setAttributes() {
 		configureFrame();
-		configurePanels();
+		setLayouts();
 		configureOtherComponents();
 	}
 
 	private void configureFrame() {
-		this.frame.setLocation(400, 100);
-		this.frame.setSize(600, 450);
-		this.frame.setLayout(this.frameLayout);
-		this.frame.setResizable(false);
-		this.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setLocation(400, 100);
+		frame.setSize(600, 450);
+		frame.setLayout(new BorderLayout());
+		frame.setResizable(false);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
+	private void setLayouts() {
+		mainPanel.setLayout(new BorderLayout());
+		senderNamePanel.setLayout(new BorderLayout());
+		receiverNamePanel.setLayout(new BorderLayout());
+		northPanel.setLayout(new GridLayout(2, 1));
+		southPanel.setLayout(new FlowLayout());
 
-	private void configurePanels() {
-		this.mainPanel.setLayout(this.mainPanelLayout);
-		this.senderNamePanel.setLayout(this.senderPanelLayout);
-		this.receiverNamePanel.setLayout(this.receiverPanelLayout);
-		this.northPanel.setLayout(this.northPanelLayout);
-		this.southPanel.setLayout(this.southPanelLayout);
-
-		this.centerPanel.setLayout(this.centerPanelLayout);
-		this.centerNorthPanel.setLayout(this.centerNorthPanelLayout);
-		this.centerSouthPanel.setLayout(this.centerSouthPanelLayout);
-		this.centerSouthWestPanel.setLayout(this.centerSouthWestPanelLayout);
-		this.centerSouthCenterPanel.setLayout(this.centerSouthCenterPanelLayout);
-		this.centerSouthEastPanel.setLayout(this.centerSouthEastPanelLayout);
-		this.centerPanel.setBorder(new MatteBorder(1, 1, 1, 1, Color.BLUE));
+		centerPanel.setLayout(new BorderLayout());
+		centerNorthPanel.setLayout(new BorderLayout());
+		centerSouthPanel.setLayout(new BorderLayout());
+		centerSouthWestPanel.setLayout(new FlowLayout());
+		centerSouthCenterPanel.setLayout(new FlowLayout());
+		centerSouthEastPanel.setLayout(new FlowLayout());
+		centerPanel.setBorder(new MatteBorder(1, 1, 1, 1, Color.BLUE));
 	}
-
+	
 	private void configureOtherComponents() {
-		this.mainTextArea.setBorder(new MatteBorder(1, 1, 1, 1, Color.GREEN));
-		this.senderNameTextField.setText(this.loginInformation.getUserName());
-		this.senderNameTextField.setEditable(false);
+		mainTextArea.setBorder(new MatteBorder(1, 1, 1, 1, Color.GREEN));
+		senderNameTextField.setText(loginInformation.getUserName());
+		senderNameTextField.setEditable(false);
 
-		this.addExtraItemButton.addActionListener(this.editMailUIMonitor);
-		this.addExtraItemButton.setActionCommand(EditMailUICommandCode.ADD_EXTRA_ITEM.toString());
+		addExtraItemButton.addActionListener(editMailUIMonitor);
+		addExtraItemButton.setActionCommand(EditMailUICommandCode.ADD_EXTRA_ITEM.toString());
 
-		this.removeExtraItemButton.addActionListener(this.editMailUIMonitor);
-		this.removeExtraItemButton.setActionCommand(EditMailUICommandCode.REMOVE_EXTRA_ITEM.toString());
+		removeExtraItemButton.addActionListener(editMailUIMonitor);
+		removeExtraItemButton.setActionCommand(EditMailUICommandCode.REMOVE_EXTRA_ITEM.toString());
 
-		this.sendButton.addActionListener(this.editMailUIMonitor);
-		this.sendButton.setActionCommand(EditMailUICommandCode.SEND.toString());
+		sendButton.addActionListener(editMailUIMonitor);
+		sendButton.setActionCommand(EditMailUICommandCode.SEND.toString());
 	}
 
 	private void addComponents() {
-		this.senderNamePanel.add(this.senderLabel, BorderLayout.WEST);
-		this.senderNamePanel.add(this.senderNameTextField, BorderLayout.CENTER);
-		this.receiverNamePanel.add(this.receiverLabel, BorderLayout.WEST);
-		this.receiverNamePanel.add(this.receiverAddressTextField, BorderLayout.CENTER);
+		senderNamePanel.add(senderLabel, BorderLayout.WEST);
+		senderNamePanel.add(senderNameTextField, BorderLayout.CENTER);
+		receiverNamePanel.add(receiverLabel, BorderLayout.WEST);
+		receiverNamePanel.add(receiverAddressTextField, BorderLayout.CENTER);
 
-		this.centerSouthWestPanel.add(this.addExtraItemButton);
-		this.centerSouthCenterPanel.add(this.extraItemNameLabel);
-		this.centerSouthEastPanel.add(this.removeExtraItemButton);
+		centerSouthWestPanel.add(addExtraItemButton);
+		centerSouthCenterPanel.add(extraItemNameLabel);
+		centerSouthEastPanel.add(removeExtraItemButton);
 
-		this.centerSouthPanel.add(this.centerSouthWestPanel, BorderLayout.WEST);
-		this.centerSouthPanel.add(this.centerSouthCenterPanel, BorderLayout.CENTER);
-		this.centerSouthPanel.add(this.centerSouthEastPanel, BorderLayout.EAST);
+		centerSouthPanel.add(centerSouthWestPanel, BorderLayout.WEST);
+		centerSouthPanel.add(centerSouthCenterPanel, BorderLayout.CENTER);
+		centerSouthPanel.add(centerSouthEastPanel, BorderLayout.EAST);
 
-		this.centerNorthPanel.add(this.subjectLabel, BorderLayout.WEST);
-		this.centerNorthPanel.add(this.subjectTextField, BorderLayout.CENTER);
-		this.centerNorthPanel.add(this.mainTextLabel, BorderLayout.SOUTH);
+		centerNorthPanel.add(subjectLabel, BorderLayout.WEST);
+		centerNorthPanel.add(subjectTextField, BorderLayout.CENTER);
+		centerNorthPanel.add(mainTextLabel, BorderLayout.SOUTH);
 
-		this.centerPanel.add(this.centerNorthPanel, BorderLayout.NORTH);
-		this.centerPanel.add(this.mainTextArea, BorderLayout.CENTER);
-		this.centerPanel.add(this.centerSouthPanel, BorderLayout.SOUTH);
+		centerPanel.add(centerNorthPanel, BorderLayout.NORTH);
+		centerPanel.add(mainTextArea, BorderLayout.CENTER);
+		centerPanel.add(centerSouthPanel, BorderLayout.SOUTH);
 
-		this.northPanel.add(this.senderNamePanel);
-		this.northPanel.add(this.receiverNamePanel);
-		this.southPanel.add(this.sendButton);
+		northPanel.add(senderNamePanel);
+		northPanel.add(receiverNamePanel);
+		southPanel.add(sendButton);
 
-		this.mainPanel.add(this.northPanel, BorderLayout.NORTH);
-		this.mainPanel.add(this.centerPanel, BorderLayout.CENTER);
-		this.mainPanel.add(this.southPanel, BorderLayout.SOUTH);
+		mainPanel.add(northPanel, BorderLayout.NORTH);
+		mainPanel.add(centerPanel, BorderLayout.CENTER);
+		mainPanel.add(southPanel, BorderLayout.SOUTH);
 
-		this.frame.add(this.mainPanel);
+		frame.add(mainPanel);
 	}
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		// new EditMailUI("发信人").intiUI();
+		UserLoginBean loginBean = new UserLoginBean();
+		loginBean.setUserName("user");
+		new EditMailUI(loginBean).launch();
 
 	}
 
@@ -192,7 +173,7 @@ public class EditMailUI {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			this.commandCode = EditMailUICommandCode.valueOf(e.getActionCommand());
+			commandCode = EditMailUICommandCode.valueOf(e.getActionCommand());
 			switch (commandCode) {
 				case ADD_EXTRA_ITEM:
 					onAddExtraItemButtonClick();
@@ -230,7 +211,7 @@ public class EditMailUI {
 			int shortNameLength = extraItemFileName.length() > 10 ? 10 : extraItemFileName.length();
 			String shortFileName = extraItemFile.getName().substring(0, shortNameLength) + "..,";
 
-			if (mail.getExtraItemsAmount() == mail.EXTRA_ITEM_CAPACITY - 1) {
+			if (mail.getAttachmentsAmount() == mail.ATTACHMENTS_CAPACITY - 1) {
 				shortFileName = shortFileName.substring(0, shortFileName.length() - 1);
 			}
 			text.append(shortFileName);
@@ -302,8 +283,8 @@ public class EditMailUI {
 			}
 			mail.setSubject(subject);
 			mail.setText(text);
-			if (mail.getExtraItemsAmount() > 0) {
-				mail.addExtraItemsToMultipart();
+			if (mail.getAttachmentsAmount() > 0) {
+				mail.addAttachmentsToMultipart();
 			}
 			mail.setReceiverAddresses(receiversAddressArray);
 			return true;

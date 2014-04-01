@@ -92,9 +92,9 @@ public class DAO {
 				result.setSubject(rs.getString("subject"));
 				result.setText(rs.getString("content"));
 				result.setSendTime(rs.getTimestamp("sendtime"));
-				result.setAttachment1(rs.getString("attachment_1"));
-				result.setAttachment2(rs.getString("attachment_3"));
-				result.setAttachment2(rs.getString("attachment_3"));
+				result.setAttachment1Name(rs.getString("attachment_1"));
+				result.setAttachment2Name(rs.getString("attachment_3"));
+				result.setAttachment2Name(rs.getString("attachment_3"));
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

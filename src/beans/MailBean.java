@@ -19,9 +19,9 @@ public class MailBean {
 
 	//this fields below are used for mail servers on the internet
 	private Multipart multipart;
-	private int extraItemCounter = 0;
-	public final int EXTRA_ITEM_CAPACITY = 3;
-	private MimeBodyPart[] extraItems = new MimeBodyPart[EXTRA_ITEM_CAPACITY];
+	private int attachmentCounter = 0;
+	public final int ATTACHMENTS_CAPACITY = 3;
+	private MimeBodyPart[] attachments = new MimeBodyPart[ATTACHMENTS_CAPACITY];
 	private String subject;
 	private String text;
 	private InternetAddress[] receiverAddresses = new InternetAddress[10];
@@ -30,10 +30,19 @@ public class MailBean {
 	private String sender;
 	private String addressee;
 	private Timestamp sendTime;
-	private String attachment1;
-	private String attachment2;
-	private String attachment3;
+	private String attachment1Name;
+	private String attachment2Name;
+	private String attachment3Name;
+	private int id;
 	
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
 	public MailBean() {
 		this.multipart = new MimeMultipart();
 	}
@@ -47,17 +56,21 @@ public class MailBean {
 	}
 
 	public MimeBodyPart[] getExtraItems() {
-		return extraItems;
+		return attachments;
 	}
 
 	public void setExtraItems(MimeBodyPart[] extraItems) {
-		this.extraItems = extraItems;
+		this.attachments = extraItems;
 	}
 
 	public String getText() {
 		return text;
 	}
 
+	public String getContent() {
+		return text;
+	}
+	
 	public void setText(String text) {
 		this.text = text;
 	}
@@ -83,12 +96,12 @@ public class MailBean {
 			return;
 		} else {
 			try {
-				extraItems[extraItemCounter] = new MimeBodyPart();
-				initMIMEBodyPart(extraItems[extraItemCounter], file);
-				if (extraItems[extraItemCounter] == null) {
+				attachments[attachmentCounter] = new MimeBodyPart();
+				initMIMEBodyPart(attachments[attachmentCounter], file);
+				if (attachments[attachmentCounter] == null) {
 					System.out.println("null pointer");
 				}
-				this.extraItemCounter++;
+				this.attachmentCounter++;
 			}  catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -108,22 +121,22 @@ public class MailBean {
 	}
 
 	public boolean extraItemsFull() {
-		return this.extraItemCounter >= EXTRA_ITEM_CAPACITY;
+		return this.attachmentCounter >= ATTACHMENTS_CAPACITY;
 	}
 
 	public void removeAllExtraItems() {
-		this.extraItems = new MimeBodyPart[EXTRA_ITEM_CAPACITY];
-		this.extraItemCounter = 0;
+		this.attachments = new MimeBodyPart[ATTACHMENTS_CAPACITY];
+		this.attachmentCounter = 0;
 	}
 
-	public int getExtraItemsAmount() {
-		return extraItemCounter;
+	public int getAttachmentsAmount() {
+		return attachmentCounter;
 	}
 
-	public void addExtraItemsToMultipart() {
-		for (int i = 0; i < this.extraItemCounter; i++) {
+	public void addAttachmentsToMultipart() {
+		for (int i = 0; i < this.attachmentCounter; i++) {
 			try {
-				multipart.addBodyPart(this.extraItems[i]);
+				multipart.addBodyPart(this.attachments[i]);
 			} catch (MessagingException e) {
 				e.printStackTrace();
 			}
@@ -154,28 +167,28 @@ public class MailBean {
 		this.sendTime = sendTime;
 	}
 
-	public String getAttachment1() {
-		return attachment1;
+	public String getAttachment1Name() {
+		return attachment1Name;
 	}
 
-	public void setAttachment1(String attachment1) {
-		this.attachment1 = attachment1;
+	public void setAttachment1Name(String attachment1) {
+		this.attachment1Name = attachment1;
 	}
 
-	public String getAttachment2() {
-		return attachment2;
+	public String getAttachment2Name() {
+		return attachment2Name;
 	}
 
-	public void setAttachment2(String attachment2) {
-		this.attachment2 = attachment2;
+	public void setAttachment2Name(String attachment2) {
+		this.attachment2Name = attachment2;
 	}
 
-	public String getAttachment3() {
-		return attachment3;
+	public String getAttachment3Name() {
+		return attachment3Name;
 	}
 
-	public void setAttachment3(String attachment3) {
-		this.attachment3 = attachment3;
+	public void setAttachment3Name(String attachment3) {
+		this.attachment3Name = attachment3;
 	}
 	
 	public void showPropertiesForLocalServer() {
@@ -184,9 +197,9 @@ public class MailBean {
 		Util.println("subject: " + this.getSubject());
 		Util.println("sender: " + this.getSender());
 		Util.println("content: " + this.getText());
-		Util.println("attachment 1 : " + this.getAttachment1());
-		Util.println("attachment 2 : " + this.getAttachment2());
-		Util.println("attachment 3 : " + this.getAttachment3());
+		Util.println("attachment 1 : " + this.getAttachment1Name());
+		Util.println("attachment 2 : " + this.getAttachment2Name());
+		Util.println("attachment 3 : " + this.getAttachment3Name());
 		
 	}
 }

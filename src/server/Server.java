@@ -3,7 +3,6 @@ package server;
 import java.io.IOException;
 import java.net.BindException;
 import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
@@ -16,12 +15,10 @@ import server.DAO.DAO;
 import server.communicate.RequestThread;
 import util.Util;
 import beans.Constant;
-import beans.MsgBean;
 
 public class Server {
 
 	private boolean started = false;
-	private DAO dao = new DAO();
 	private static Selector selector = null;
 	private static ServerSocketChannel serverSocketChannel = null;
 	private final static Logger logger = Logger.getLogger(Server.class.getName());
@@ -89,10 +86,6 @@ public class Server {
 			}
 			
 		}
-	}
-
-	private MsgBean receiveMsg() {
-		return null;
 	}
 
 }
