@@ -29,10 +29,10 @@ public class MailBean {
 	//the fields below are used for this system's own mail server
 	private String sender;
 	private String addressee;
-	private Timestamp sendTime;
-	private String attachment1Name;
-	private String attachment2Name;
-	private String attachment3Name;
+	private Timestamp sentTime;
+	private String attachment1Name = "";
+	private String attachment2Name = "";
+	private String attachment3Name = "";
 	private int id;
 	
 	public int getId() {
@@ -160,11 +160,11 @@ public class MailBean {
 	}
 
 	public Timestamp getSendTime() {
-		return sendTime;
+		return sentTime;
 	}
 
-	public void setSendTime(Timestamp sendTime) {
-		this.sendTime = sendTime;
+	public void setSentTime(Timestamp sendTime) {
+		this.sentTime = sendTime;
 	}
 
 	public String getAttachment1Name() {

@@ -10,7 +10,7 @@ import client.thread.LoginThread;
 
 public class LoginUI {
 	public static enum LoginCommandCode {CONFIRM,REST}
-	private JFrame frame = new JFrame("邮件代理系统");
+	public JFrame frame = new JFrame("邮件代理系统");
 	private JPanel centerPanel = new JPanel();
 	private JPanel southPanel = new JPanel();
 	private JPanel serverNamePanel = new JPanel();
@@ -26,17 +26,21 @@ public class LoginUI {
 	private JLabel userNameLabel = new JLabel("user name:");
 	private JLabel passwordLabel = new JLabel("password:");
 
-	private JComboBox<String> serverNameSelector = new JComboBox<String>();
-	private JTextField userNameTextField = new JTextField(20);
-	private JPasswordField passwordTextField = new JPasswordField(20);
+	public JComboBox<String> serverNameSelector = new JComboBox<String>();
+	public JTextField userNameTextField = new JTextField(20);
+	public JPasswordField passwordTextField = new JPasswordField(20);
 
 	private JButton confirmButton = new JButton("login");
 	private JButton resetButton = new JButton("reset");
 
-	private LoginUIMonitor monitor = new LoginUIMonitor();
+	public LoginUIMonitor monitor = new LoginUIMonitor();
 
 	private UserLoginBean loginInformation = new UserLoginBean();
 	
+	public void setLoginInformation(UserLoginBean loginInformation) {
+		this.loginInformation = loginInformation;
+	}
+
 	public void launch() {
 		initUI();
 		frame.setVisible(true);
@@ -73,7 +77,7 @@ public class LoginUI {
 		passwordPanel.setLayout(dataLayout);
 	}
 
-	private void configureOthercomponents() {
+	public void configureOthercomponents() {
 	//	waitingWindow.setVisible(false);
 		serverNameSelector.addItem("");
 		serverNameSelector.addItem("163");
@@ -107,7 +111,7 @@ public class LoginUI {
 
 	
 
-	private class LoginUIMonitor implements ActionListener {
+	public class LoginUIMonitor implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			LoginCommandCode commandCode = LoginCommandCode.valueOf(e.getActionCommand());
@@ -127,7 +131,7 @@ public class LoginUI {
 			cleanTextField();
 		}
 
-		private void onConfirmButtonClick() {
+		public void onConfirmButtonClick() {
 			fillLoginInformation();
 			if (!informationValid()) {
 				return;

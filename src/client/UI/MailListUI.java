@@ -1,7 +1,8 @@
 package client.UI;
 
 import java.awt.BorderLayout;
-import java.awt.FlowLayout;
+import java.awt.GridLayout;
+import java.awt.Panel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -22,50 +23,46 @@ public class MailListUI extends JFrame {
 	private static final int MAILS_EACH_PAGE = 10;
 	private static final String NEXT_PAGE = "NEXT_PAGE";
 	private static final String PREVIOUS_PAGE = "PREVIOUS_PAGE";
-	
+
 	private JPanel mainPanel = new JPanel();
 	private JPanel northPanel = new JPanel();
 	private JPanel centerPanel = new JPanel();
 	private JPanel southPanel = new JPanel();
-	private List<MailURLLabel> mailURLLabels;
-	public List<MailURLLabel> getMailLabels() {
-		return mailURLLabels;
-	}
-
-	public void setMailURLLabels(List<MailURLLabel> mailLabels) {
-		this.mailURLLabels = mailLabels;
-		this.mailCount = mailLabels.size();
-		northLabel.setText("共有 " + mailCount + " 封邮件");
-		configurePanels(mailLabels);
-		configureButtons();
-	}
-
-	private int mailCount = 0;
-	private boolean atFirstPage = true;
-	private boolean atLastPage = false;
 	
 	private JLabel northLabel = new JLabel("", JLabel.CENTER);
 	private JButton previousButton = new JButton("上一页");
 	private JButton nextPageButton = new JButton("下一页");
 
 	MailListUIMonitor monitor = new MailListUIMonitor();
+
+	private List<MailBean> mails;
+	private List<MailURLLabel> mailURLLabels = new ArrayList<>();
+	private int mailCount = 0;
+	private int currentPage = 0;
+	private int lastPage = 0;
+	public int currentIndex = 0;//the position in the mail URL list of the first link in the center panel
 	
 	public MailListUI() {
 		this.setTitle("邮件列表");
 		configureFrame();
 		setLayouts();
 	}
-	
-	public MailListUI(List<MailURLLabel> mailURLLabels) {
-		this();
-		this.setMailURLLabels(mailURLLabels);
-	}
 
-	private void launch() {
+	public MailListUI(List<MailBean> mails) {
+		this();
+		this.mails = mails;
+		for (MailBean mail : mails) {
+			MailURLLabel mailURL = new MailURLLabel(mail, this);
+			Util.println("add " + mailURL.getMailSubject());
+			mailURLLabels.add(mailURL);
+		}
+		this.setMailURLLabels(mailURLLabels);
+		launch();
+	}
+	
+	public void launch() {
 		this.setVisible(true);
 	}
-
-	
 
 	private void configureFrame() {
 		this.setLocation(400, 250);
@@ -77,7 +74,7 @@ public class MailListUI extends JFrame {
 		this.setLayout(new BorderLayout());
 		mainPanel.setLayout(new BorderLayout());
 		northPanel.setLayout(new BorderLayout());
-		centerPanel.setLayout(new FlowLayout());
+		centerPanel.setLayout(new GridLayout(10,1));
 		southPanel.setLayout(new BorderLayout());
 	}
 
@@ -87,23 +84,23 @@ public class MailListUI extends JFrame {
 		mainPanel.setBorder(BorderFactory.createEtchedBorder());
 		northPanel.setBorder(BorderFactory.createEtchedBorder());
 		southPanel.setBorder(BorderFactory.createEtchedBorder());
-		
+
 		mainPanel.add(northPanel, BorderLayout.NORTH);
 		mainPanel.add(centerPanel, BorderLayout.CENTER);
 		mainPanel.add(southPanel, BorderLayout.SOUTH);
 		northPanel.add(northLabel, BorderLayout.CENTER);
-		
+
 		southPanel.add(previousButton, BorderLayout.WEST);
 		southPanel.add(nextPageButton, BorderLayout.EAST);
-		
-		addMailsToCenterPanel(mailLabels);
+
+		addMailsToCenterPanel(mailLabels, 0);
 	}
 
 	private void configureButtons() {
 		previousButton.setActionCommand(PREVIOUS_PAGE);
 		previousButton.addActionListener(monitor);
 		previousButton.setEnabled(false);
-		
+
 		nextPageButton.setActionCommand(NEXT_PAGE);
 		nextPageButton.addActionListener(monitor);
 		if (this.mailCount < MAILS_EACH_PAGE) {
@@ -111,19 +108,27 @@ public class MailListUI extends JFrame {
 		}
 	}
 
-	private void addMailsToCenterPanel(List<MailURLLabel> mailLabels) {
-		for (int i = 0; i < mailCount; i++) {
-			if (i == MAILS_EACH_PAGE) {
-				break;
+	private void addMailsToCenterPanel(List<MailURLLabel> mailLabels, int startIndex) {
+		if (startIndex < mailLabels.size()) {
+			centerPanel.removeAll();
+			centerPanel.setLayout(new GridLayout(10,1));
+			int currentIndex = 0;
+			for (int i = 0; i < MAILS_EACH_PAGE; i++) {
+				currentIndex = i +startIndex;
+				if (currentIndex == mailCount) {
+					break;
+				}
+				centerPanel.add(mailLabels.get(currentIndex), i);
+				Util.println("add " + i + (mailLabels.get(currentIndex)).getMailSubject());
 			}
-			MailURLLabel tempMailURLLabel = mailLabels.get(i);
-			centerPanel.add(mailLabels.get(i));
+			centerPanel.validate();
+			this.repaint();
 		}
 	}
 
 	public static void main(String[] args) {
 		MailListUI mailListUI = new MailListUI();
-		
+
 		MailBean mail = new MailBean();
 		mail.setId(1);
 		mail.setSender("发信人");
@@ -133,17 +138,16 @@ public class MailListUI extends JFrame {
 		mail.setAttachment1Name("系统提示");
 		mail.setAttachment2Name("很抱歉, 操作执行不成功！");
 		mail.setAttachment3Name("现网问题跟踪报告模板更改通知");
-		
-		
-		MailURLLabel mailLabel = new MailURLLabel(mail,mailListUI);
+
+		MailURLLabel mailLabel = new MailURLLabel(mail, mailListUI);
 		List<MailURLLabel> list = new ArrayList<>();
 		list.add(mailLabel);
 		mailListUI.setMailURLLabels(list);
 		mailListUI.launch();
 	}
 
-	private class MailListUIMonitor  implements ActionListener {
-		
+	private class MailListUIMonitor implements ActionListener {
+
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			String command = e.getActionCommand();
@@ -154,21 +158,64 @@ public class MailListUI extends JFrame {
 				case NEXT_PAGE:
 					onNextButtonPressed();
 					break;
-					default:
-						Util.println("error in MailListUIMonitor");
-						System.exit(-1);
+				default:
+					Util.println("error in MailListUIMonitor");
+					System.exit(-1);
 			}
-			
 		}
 
 		private void onNextButtonPressed() {
 			Util.println("下一页");
+			if (currentPage < lastPage) {
+				currentPage ++;
+				previousButton.setEnabled(true);
+				currentIndex += MAILS_EACH_PAGE;
+				addMailsToCenterPanel(mailURLLabels, currentIndex);
+				if (currentPage == lastPage - 1) {
+					nextPageButton.setEnabled(false);
+				}
+			}
 		}
 
 		private void onPreviousButtonPressed() {
 			Util.println("上一页");
+			if (currentPage > 0) {
+				currentPage --;
+				nextPageButton.setEnabled(true);
+				currentIndex -= MAILS_EACH_PAGE;
+				addMailsToCenterPanel(mailURLLabels, currentIndex);
+				if (currentPage == 0) {
+					previousButton.setEnabled(false);
+				}
+			}
 		}
-		
+
 	}
 
+	public List<MailURLLabel> getMailLabels() {
+		return mailURLLabels;
+	}
+
+	public void setMailURLLabels(List<MailURLLabel> mailLabels) {
+		mailURLLabels = mailLabels;
+		mailCount = mailLabels.size();
+		lastPage = calculateTotalPages(mailCount);
+		northLabel.setText("共有 " + mailCount + " 封邮件");
+		configurePanels(mailLabels);
+		configureButtons();
+	}
+	
+	private int  calculateTotalPages(int records) {
+		int totalPages = 0;
+		if (records <= 10) {
+			totalPages = 1;
+		} else {
+			totalPages = records / 10;
+			if (records % 10 != 0) {
+				totalPages ++;
+			}
+		}
+		Util.println("records: " + records + " pages: " + totalPages);
+		return totalPages;
+	}
 }

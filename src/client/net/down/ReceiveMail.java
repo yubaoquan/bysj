@@ -2,8 +2,11 @@ package client.net.down;
 
 
 import java.io.File;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 
 import javax.mail.Flags;
@@ -20,23 +23,28 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeUtility;
 
+import com.sun.org.apache.xalan.internal.xsltc.compiler.util.Util;
+
+import beans.MailBean;
 import beans.UserLoginBean;
+import client.UI.MailListUI;
 import client.io.MailSaver;
 
-
-/**
- * 有一封邮件就需要建立一个ReciveMail对象
- */
 public class ReceiveMail {
 	private MimeMessage mimeMessage = null;
 	
 	private StringBuffer bodyText = new StringBuffer();// 存放邮件内容
-	private String dateFormat = "yy-MM-dd HH:mm"; // 默认的日前显示格式
+	private String dateFormat = "yyyy-MM-dd hh:mm:ss"; // 默认的日前显示格式
 	private static String filePathPrefix;
 	private MailSaver mailSaver = new MailSaver();
 	
 	public ReceiveMail(MimeMessage mimeMessage) {
 		this.mimeMessage = mimeMessage;
+		try {
+			this.getMailContent((Part) mimeMessage);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	public ReceiveMail() {
@@ -127,11 +135,11 @@ public class ReceiveMail {
 				sentdate = mimeMessage.getSentDate();
 			}
 		} catch (MessagingException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		SimpleDateFormat format = new SimpleDateFormat(dateFormat);
-		return format.format(sentdate);
+		String result = format.format(sentdate);
+		return result;
 	}
 
 	/**
@@ -231,19 +239,35 @@ public class ReceiveMail {
 		folder.open(Folder.READ_ONLY);
 		Message[] messages = folder.getMessages();
 		System.out.println("Messages's length: " + messages.length);
-		receiveAndSaveMails(messages);
+		List<MailBean> mails = receiveAndSaveAsMailBeans(messages);
+		new MailListUI(mails);
+		
 	}
 
-	private void receiveAndSaveMails(Message[] message) throws MessagingException, Exception {
+	private List<MailBean> receiveAndSaveAsMailBeans(Message[] message) throws MessagingException, Exception {
 		ReceiveMail pmm = null;
+		List<MailBean> mails = new ArrayList<>();
 		for (int i = 0; i < message.length; i++) {
 			//如果这个message被擦除了，则跳过
 			if (message[i].isExpunged()) {
 				continue;
+			} else {
+				pmm = new ReceiveMail((MimeMessage) message[i]);
+				MailBean mail = new MailBean();
+				fillMailBean(pmm, mail);
+				mails.add(mail);
 			}
-			pmm = new ReceiveMail((MimeMessage) message[i]);
-			pmm.mailSaver.saveMail(message, pmm, i);
 		}
+		return mails;
+	}
+
+	private void fillMailBean(ReceiveMail pmm, MailBean mail) throws Exception {
+		mail.setId(-1);
+		mail.setSender(pmm.getFrom());
+		mail.setAddressee(pmm.getMailAddress("to"));
+		mail.setSubject(pmm.getSubject());
+		mail.setText(pmm.getBodyText());
+		mail.setSentTime(Timestamp.valueOf(pmm.getSentDate()));
 	}
 
 	private static Store initStore(String smtpServerAddress, String pop3ServerAddress, String userName, String password) throws NoSuchProviderException {

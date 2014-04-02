@@ -91,7 +91,7 @@ public class DAO {
 				result.setAddressee(rs.getString("addressee"));
 				result.setSubject(rs.getString("subject"));
 				result.setText(rs.getString("content"));
-				result.setSendTime(rs.getTimestamp("sendtime"));
+				result.setSentTime(rs.getTimestamp("sendtime"));
 				result.setAttachment1Name(rs.getString("attachment_1"));
 				result.setAttachment2Name(rs.getString("attachment_3"));
 				result.setAttachment2Name(rs.getString("attachment_3"));

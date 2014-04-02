@@ -16,6 +16,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.MatteBorder;
@@ -33,6 +34,7 @@ public class MailDetailViewUI extends JFrame {
 
 	private JPanel mainPanel = new JPanel();
 	private JPanel senderNamePanel = new JPanel();
+	private JPanel sentTimePanel = new JPanel();
 	private JPanel receiverNamePanel = new JPanel();
 	private JPanel northPanel = new JPanel();
 	private JPanel southPanel = new JPanel();
@@ -44,11 +46,16 @@ public class MailDetailViewUI extends JFrame {
 	private JPanel centerSouthEastPanel = new JPanel();
 	private JLabel senderLabel = new JLabel("发件人:             ");
 	private JTextField senderNameTextField = new JTextField();
+	
+	private JLabel sentTimeLabel = new JLabel("发送于:             ");
+	private JTextField sentTimeTextField = new JTextField();
+	
 	private JLabel addresseeLabel = new JLabel("收件人:             ");
 	private JTextField addresseeTextField = new JTextField();
 	private JLabel subjectLabel = new JLabel("标题");
 	private JTextField subjectTextField = new JTextField();
 	private JLabel mainTextLabel = new JLabel("正文");
+	private JScrollPane scrollPane = new JScrollPane();
 	private JTextArea contentTextArea = new JTextArea();
 	private JLabel attachmentNameLabel = new JLabel("附件:");
 	private JButton backButton = new JButton("返回邮件列表");
@@ -64,6 +71,7 @@ public class MailDetailViewUI extends JFrame {
 	public void launch() {
 		intiUI();
 		this.parentUI.setVisible(false);
+		this.validate();
 		setVisible(true);
 	}
 
@@ -83,15 +91,16 @@ public class MailDetailViewUI extends JFrame {
 		setLocation(400, 100);
 		setSize(600, 450);
 		setLayout(new BorderLayout());
-		setResizable(false);
+		setResizable(true);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 
 	private void setLayouts() {
 		mainPanel.setLayout(new BorderLayout());
 		senderNamePanel.setLayout(new BorderLayout());
+		sentTimePanel.setLayout(new BorderLayout());
 		receiverNamePanel.setLayout(new BorderLayout());
-		northPanel.setLayout(new GridLayout(2, 1));
+		northPanel.setLayout(new GridLayout(3, 1));
 		southPanel.setLayout(new FlowLayout());
 
 		centerPanel.setLayout(new BorderLayout());
@@ -109,11 +118,14 @@ public class MailDetailViewUI extends JFrame {
 		
 		contentTextArea.setBorder(new MatteBorder(1, 1, 1, 1, Color.GREEN));
 		contentTextArea.setText(mail.getText());
+		contentTextArea.setLineWrap(true);
+		contentTextArea.setWrapStyleWord(true);
 		contentTextArea.setEditable(false);
 		
 		senderNameTextField.setText(mail.getSender());
 		senderNameTextField.setEditable(false);
-
+		sentTimeTextField.setText(mail.getSendTime().toString());
+		sentTimeTextField.setEditable(false);
 		addresseeTextField.setText(mail.getAddressee());
 		addresseeTextField.setEditable(false);
 
@@ -136,6 +148,10 @@ public class MailDetailViewUI extends JFrame {
 	private void addComponents() {
 		senderNamePanel.add(senderLabel, BorderLayout.WEST);
 		senderNamePanel.add(senderNameTextField, BorderLayout.CENTER);
+//TODO
+		sentTimePanel.add(sentTimeLabel, BorderLayout.WEST);
+		sentTimePanel.add(sentTimeTextField, BorderLayout.CENTER);
+		
 		receiverNamePanel.add(addresseeLabel, BorderLayout.WEST);
 		receiverNamePanel.add(addresseeTextField, BorderLayout.CENTER);
 
@@ -151,10 +167,14 @@ public class MailDetailViewUI extends JFrame {
 		centerNorthPanel.add(mainTextLabel, BorderLayout.SOUTH);
 
 		centerPanel.add(centerNorthPanel, BorderLayout.NORTH);
-		centerPanel.add(contentTextArea, BorderLayout.CENTER);
+		//TODO
+		scrollPane = new JScrollPane(this.contentTextArea);
+		centerPanel.add(scrollPane, BorderLayout.CENTER);
+		
 		centerPanel.add(centerSouthPanel, BorderLayout.SOUTH);
 
 		northPanel.add(senderNamePanel);
+		northPanel.add(sentTimePanel);
 		northPanel.add(receiverNamePanel);
 		southPanel.add(backButton);
 
@@ -179,7 +199,8 @@ public class MailDetailViewUI extends JFrame {
 		MailURLLabel mailLabel = new MailURLLabel(mail);
 		List<MailURLLabel> list = new ArrayList<>();
 		list.add(mailLabel);
-		MailListUI parent = new MailListUI(list);
+		//	TODO
+		MailListUI parent = new MailListUI();
 		new MailDetailViewUI(mail, parent).launch();
 
 	}

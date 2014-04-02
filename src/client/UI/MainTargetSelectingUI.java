@@ -84,10 +84,9 @@ public class MainTargetSelectingUI {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			//frame.dispose();
 			JOptionPane.showConfirmDialog(null, (String)"邮件接收完成!", "finish", JOptionPane.CLOSED_OPTION);
 			frame.dispose();
-			System.exit(0);
+			//System.exit(0);
 		}
 
 	}
