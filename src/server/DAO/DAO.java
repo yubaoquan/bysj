@@ -6,10 +6,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
 
-import util.Util;
 import beans.MailBean;
 
 public class DAO {
@@ -32,8 +32,22 @@ public class DAO {
 
 	}
 
-	public void insertMailIntoMailbox(MailBean mailBean) {
-		// TODO Auto-generated method stub
+	public void insertMailIntoMailbox(MailBean mail) {
+		String sql = "insert into mail (sender, addressee, subject, content, sendtime, attachment_1, attachment_2, attachment_3) values (?, ?, ?, ?, ?, ?, ?, ?)";
+		try (PreparedStatement stmt = conn.prepareStatement(sql);){
+			stmt.setString(1, mail.getSender());
+			stmt.setString(2, mail.getAddressee());
+			stmt.setString(3, mail.getSubject());
+			stmt.setString(4, mail.getContent());
+			stmt.setTimestamp(5, new Timestamp(System.currentTimeMillis()));
+			stmt.setString(6, mail.getAttachment1Name());
+			stmt.setString(7, mail.getAttachment2Name());
+			stmt.setString(8, mail.getAttachment3Name());
+			stmt.executeUpdate();
+			//conn.commit();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	public void insertNewUser(String username, String password) {
@@ -99,7 +113,6 @@ public class DAO {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		// TODO Auto-generated method stub
 		return result;
 	}
 
@@ -171,23 +184,18 @@ public class DAO {
 
 	public static void main(String[] args) {
 		DAO dao = new DAO();
-		/*List<String> result = dao.listMailSubjects("admin");
-		for (String temp : result) {
-			System.out.println(temp);
-		}
-		String position = dao.findAttachmentPositionByOffset(1,0);
-	
-		System.out.println(position);*/
-		//dao.insertNewUser("abc", "def");
-		/*System.out.println(dao.userExists("abc") + " " + dao.usernameAndPasswordExists("abc", "def"));
-		int count = dao.countMails("admin");
-		Util.println("admin has " + count + " mails");
-		HashMap<Integer, String> result = (HashMap<Integer, String>) dao.listMails("admin");
-		for (Map.Entry<Integer, String> m : result.entrySet()) {
-			Util.println("id: " + m.getKey() + " subject: " + m.getValue());
-		}*/
-		/*MailBean mb = dao.findMailDetail(1);
-		mb.showPropertiesForLocalServer();*/
+		
+		MailBean mb = new MailBean();
+		mb.setSender("admin");
+		mb.setAddressee("receiver");
+		//mb.setSentTime(new Timestamp(System.currentTimeMillis()));
+		mb.setSubject("from JDBC");
+		mb.setText("This is from JDBC");
+		mb.setAttachment1Name("attchment1");
+		mb.setAttachment2Name("attchment2");
+		mb.setAttachment3Name("attchment3");
+		dao.insertMailIntoMailbox(mb);
+		mb.showPropertiesForLocalServer();
 		System.out.println(dao.userExists("admin"));
 		System.out.println(dao.userExists("admin2"));
 	}
