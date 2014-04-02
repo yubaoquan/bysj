@@ -23,7 +23,6 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeUtility;
 
-import com.sun.org.apache.xalan.internal.xsltc.compiler.util.Util;
 
 import beans.MailBean;
 import beans.UserLoginBean;
