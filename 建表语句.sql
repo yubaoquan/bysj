@@ -64,4 +64,8 @@ CREATE TABLE `user` (
   PRIMARY KEY (`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+ALTER TABLE `bysj`.`mail` 
+DROP COLUMN `attachment_3`,
+DROP COLUMN `attachment_2`,
+CHANGE COLUMN `attachment_1` `attachments` TEXT NULL DEFAULT NULL ;
 

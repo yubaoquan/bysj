@@ -4,12 +4,19 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
-import beans.UserLoginBean;
+import beans.UserBean;
 import client.net.up.LoginTool;
 import client.thread.LoginThread;
 
 public class LoginUI {
-	public static enum LoginCommandCode {CONFIRM,REST}
+	public static enum LoginCommandCode {
+		CONFIRM, REST
+	}
+
+	//public static final String INTERNET_LOGIN = "INTERNET_LOGIN";
+	//public static final String LOCAL_LOGIN = "LOCAL_LOGIN";
+	
+	//private String loginType = INTERNET_LOGIN;
 	public JFrame frame = new JFrame("邮件代理系统");
 	private JPanel centerPanel = new JPanel();
 	private JPanel southPanel = new JPanel();
@@ -35,9 +42,9 @@ public class LoginUI {
 
 	public LoginUIMonitor monitor = new LoginUIMonitor();
 
-	private UserLoginBean loginInformation = new UserLoginBean();
-	
-	public void setLoginInformation(UserLoginBean loginInformation) {
+	private UserBean loginInformation = new UserBean();
+
+	public void setLoginInformation(UserBean loginInformation) {
 		this.loginInformation = loginInformation;
 	}
 
@@ -45,7 +52,7 @@ public class LoginUI {
 		initUI();
 		frame.setVisible(true);
 	}
-	
+
 	public void initUI() {
 		configure();
 		addComponents();
@@ -78,7 +85,7 @@ public class LoginUI {
 	}
 
 	public void configureOthercomponents() {
-	//	waitingWindow.setVisible(false);
+		// waitingWindow.setVisible(false);
 		serverNameSelector.addItem("");
 		serverNameSelector.addItem("163");
 		serverNameSelector.addItem("QQ");
@@ -94,22 +101,20 @@ public class LoginUI {
 		userNamePanel.add(userNameTextField);
 		passwordPanel.add(passwordLabel);
 		passwordPanel.add(passwordTextField);
-		
+
 		confirmButton.addActionListener(monitor);
 		resetButton.addActionListener(monitor);
-		
+
 		centerPanel.add(serverNamePanel);
 		centerPanel.add(userNamePanel);
 		centerPanel.add(passwordPanel);
-		
+
 		southPanel.add(confirmButton);
 		southPanel.add(resetButton);
-		
+
 		frame.add(centerPanel, BorderLayout.CENTER);
 		frame.add(southPanel, BorderLayout.SOUTH);
 	}
-
-	
 
 	public class LoginUIMonitor implements ActionListener {
 		@Override
@@ -140,17 +145,17 @@ public class LoginUI {
 			if (loginSucceed) {
 				LoginTool.selectSendOrReceive(LoginUI.this);
 			} else {
-				JOptionPane.showMessageDialog(frame, (String)"登录失败.请确认用户名和密码填写正确并且网络连接正常.", "错误", JOptionPane.WARNING_MESSAGE);
+				JOptionPane.showMessageDialog(frame, (String) "登录失败.请确认用户名和密码填写正确并且网络连接正常.", "错误", JOptionPane.WARNING_MESSAGE);
 			}
 		}
-		
+
 		private boolean informationValid() {
 			if (serverNameSelector.getSelectedIndex() == 0) {
-				JOptionPane.showMessageDialog(frame, (String)"请选择邮件服务器.", "错误", JOptionPane.WARNING_MESSAGE);
+				JOptionPane.showMessageDialog(frame, (String) "请选择邮件服务器.", "错误", JOptionPane.WARNING_MESSAGE);
 				return false;
 			}
 			if (!LoginTool.loginInformationValid(loginInformation)) {
-				JOptionPane.showMessageDialog(frame, (String)"用户名和密码不能为空,请检查后重新输入.", "错误", JOptionPane.WARNING_MESSAGE);
+				JOptionPane.showMessageDialog(frame, (String) "用户名和密码不能为空,请检查后重新输入.", "错误", JOptionPane.WARNING_MESSAGE);
 				return false;
 			}
 			return true;
@@ -158,7 +163,7 @@ public class LoginUI {
 	}
 
 	private void fillLoginInformation() {
-		if (((String)serverNameSelector.getSelectedItem()).equalsIgnoreCase("box")) {
+		if (((String) serverNameSelector.getSelectedItem()).equalsIgnoreCase("box")) {
 			loginInformation.setLocalServerEnabled(true);
 		} else {
 			loginInformation.setSmtpServerName(getSmtpServerNameFromSelector());
@@ -167,44 +172,44 @@ public class LoginUI {
 		loginInformation.setUserName(getUserNameFromTextField());
 		loginInformation.setPassword(getPasswordFromTextField());
 	}
-	
+
 	public void cleanTextField() {
 		serverNameSelector.setSelectedIndex(0);
 		userNameTextField.setText("");
 		passwordTextField.setText("");
 	}
-	
+
 	public String getSmtpServerNameFromSelector() {
 		String selection = (String) serverNameSelector.getSelectedItem();
 		if (selection.equals("")) {
 			return "";
 		} else {
-			return "smtp." + selection + ".com"; 
+			return "smtp." + selection + ".com";
 		}
 	}
-	
+
 	public String getPop3ServerNameFromSelector() {
 		String selection = (String) serverNameSelector.getSelectedItem();
 		if (selection.equals("")) {
 			return "";
 		} else {
-			return "pop." + selection + ".com"; 
+			return "pop." + selection + ".com";
 		}
 	}
-	
+
 	public String getUserNameFromTextField() {
 		return userNameTextField.getText();
 	}
-	
+
 	public String getPasswordFromTextField() {
 		return new String(passwordTextField.getPassword());
 	}
-	
+
 	public void dispose() {
 		frame.dispose();
 	}
 
-	public UserLoginBean getLoginInformation() {
+	public UserBean getLoginInformation() {
 		return loginInformation;
 	}
 }

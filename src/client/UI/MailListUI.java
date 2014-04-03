@@ -135,9 +135,9 @@ public class MailListUI extends JFrame {
 		mail.setAddressee("收信人");
 		mail.setSubject("标题");
 		mail.setText("正文");
-		mail.setAttachment1Name("系统提示");
+		/*mail.setAttachment1Name("系统提示");
 		mail.setAttachment2Name("很抱歉, 操作执行不成功！");
-		mail.setAttachment3Name("现网问题跟踪报告模板更改通知");
+		mail.setAttachment3Name("现网问题跟踪报告模板更改通知");*/
 
 		MailURLLabel mailLabel = new MailURLLabel(mail, mailListUI);
 		List<MailURLLabel> list = new ArrayList<>();

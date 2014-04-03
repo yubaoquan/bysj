@@ -25,7 +25,7 @@ import javax.mail.internet.MimeUtility;
 
 
 import beans.MailBean;
-import beans.UserLoginBean;
+import beans.UserBean;
 import client.UI.MailListUI;
 import client.io.MailSaver;
 
@@ -225,21 +225,26 @@ public class ReceiveMail {
 	/**
 	 * 本类入口
 	 */
-	public void loginAndReceiveMail(UserLoginBean li) throws Exception {
-		String smtpServerAddress = li.getSmtpServerName();
-		String pop3ServerAddress = li.getPop3ServerName();
-		String userName = li.getUserName();
-		String password = li.getPassword();
-		
-		Store store = initStore(smtpServerAddress, pop3ServerAddress, userName, password);
-		store.connect();
+	public void loginAndReceiveMail(UserBean user) throws Exception {
+		if (user.isLocalServerEnabled()) {
+			System.out.println("local receive mail");//TODO
+		} else {
+			String smtpServerAddress = user.getSmtpServerName();
+			String pop3ServerAddress = user.getPop3ServerName();
+			String userName = user.getUserName();
+			String password = user.getPassword();
+			
+			Store store = initStore(smtpServerAddress, pop3ServerAddress, userName, password);
+			store.connect();
 
-		Folder folder = store.getFolder("INBOX");
-		folder.open(Folder.READ_ONLY);
-		Message[] messages = folder.getMessages();
-		System.out.println("Messages's length: " + messages.length);
-		List<MailBean> mails = receiveAndSaveAsMailBeans(messages);
-		new MailListUI(mails);
+			Folder folder = store.getFolder("INBOX");
+			folder.open(Folder.READ_ONLY);
+			Message[] messages = folder.getMessages();
+			System.out.println("Messages's length: " + messages.length);
+			List<MailBean> mails = receiveAndSaveAsMailBeans(messages);
+			new MailListUI(mails);
+		}
+		
 		
 	}
 

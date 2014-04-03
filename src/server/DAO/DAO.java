@@ -29,7 +29,6 @@ public class DAO {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
 	}
 
 	public void insertMailIntoMailbox(MailBean mail) {
@@ -40,9 +39,10 @@ public class DAO {
 			stmt.setString(3, mail.getSubject());
 			stmt.setString(4, mail.getContent());
 			stmt.setTimestamp(5, new Timestamp(System.currentTimeMillis()));
-			stmt.setString(6, mail.getAttachment1Name());
+			//TODO
+			/*stmt.setString(6, mail.getAttachment1Name());
 			stmt.setString(7, mail.getAttachment2Name());
-			stmt.setString(8, mail.getAttachment3Name());
+			stmt.setString(8, mail.getAttachment3Name());*/
 			stmt.executeUpdate();
 			//conn.commit();
 		} catch (Exception e) {
@@ -106,9 +106,10 @@ public class DAO {
 				result.setSubject(rs.getString("subject"));
 				result.setText(rs.getString("content"));
 				result.setSentTime(rs.getTimestamp("sendtime"));
-				result.setAttachment1Name(rs.getString("attachment_1"));
+				//TODO
+				/*result.setAttachment1Name(rs.getString("attachment_1"));
 				result.setAttachment2Name(rs.getString("attachment_3"));
-				result.setAttachment2Name(rs.getString("attachment_3"));
+				result.setAttachment2Name(rs.getString("attachment_3"));*/
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -191,9 +192,9 @@ public class DAO {
 		//mb.setSentTime(new Timestamp(System.currentTimeMillis()));
 		mb.setSubject("from JDBC");
 		mb.setText("This is from JDBC");
-		mb.setAttachment1Name("attchment1");
+	/*	mb.setAttachment1Name("attchment1");
 		mb.setAttachment2Name("attchment2");
-		mb.setAttachment3Name("attchment3");
+		mb.setAttachment3Name("attchment3");*/
 		dao.insertMailIntoMailbox(mb);
 		mb.showPropertiesForLocalServer();
 		System.out.println(dao.userExists("admin"));

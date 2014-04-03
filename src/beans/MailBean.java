@@ -17,24 +17,28 @@ import util.Util;
 
 public class MailBean {
 
-	//this fields below are used for mail servers on the internet
+	public static final int FOR_INTERNET_SERVER = 0;
+	public static final int FOR_LOCAL_SERVER = 1;
+	public final int ATTACHMENTS_CAPACITY = 3;
+	
+	// this fields below are used for mail servers on the internet
 	private Multipart multipart;
 	private int attachmentCounter = 0;
-	public final int ATTACHMENTS_CAPACITY = 3;
-	private MimeBodyPart[] attachments = new MimeBodyPart[ATTACHMENTS_CAPACITY];
+	private MimeBodyPart[] attachmentsForInternetServer = new MimeBodyPart[ATTACHMENTS_CAPACITY];
 	private String subject;
 	private String text;
-	private InternetAddress[] receiverAddresses = new InternetAddress[10];
+	private InternetAddress[] internetAddressees = new InternetAddress[10];
 
-	//the fields below are used for this system's own mail server
+	// the fields below are used for this system's own mail server
 	private String sender;
 	private String addressee;
 	private Timestamp sentTime;
-	private String attachment1Name = "";
+	private File[] attachmentsForLocalServer = new File[ATTACHMENTS_CAPACITY];
+	/*private String attachment1Name = "";
 	private String attachment2Name = "";
-	private String attachment3Name = "";
+	private String attachment3Name = "";*/
 	private int id;
-	
+
 	public int getId() {
 		return id;
 	}
@@ -56,11 +60,11 @@ public class MailBean {
 	}
 
 	public MimeBodyPart[] getExtraItems() {
-		return attachments;
+		return attachmentsForInternetServer;
 	}
 
 	public void setExtraItems(MimeBodyPart[] extraItems) {
-		this.attachments = extraItems;
+		this.attachmentsForInternetServer = extraItems;
 	}
 
 	public String getText() {
@@ -70,17 +74,17 @@ public class MailBean {
 	public String getContent() {
 		return text;
 	}
-	
+
 	public void setText(String text) {
 		this.text = text;
 	}
 
-	public InternetAddress[] getReceiverAddresses() {
-		return receiverAddresses;
+	public InternetAddress[] getInternetAddressees() {
+		return internetAddressees;
 	}
 
-	public void setReceiverAddresses(InternetAddress[] receiverAddresses) {
-		this.receiverAddresses = receiverAddresses;
+	public void setInternetAddressees(InternetAddress[] receiverAddresses) {
+		this.internetAddressees = receiverAddresses;
 	}
 
 	public String getSubject() {
@@ -91,42 +95,50 @@ public class MailBean {
 		this.subject = subject;
 	}
 
-	public void addExtraItem(File file) {
-		if (extraItemsFull()) {
+	public void addAttachment(File attachment, int mailType) {
+		if (attachmentsAreFull()) {
 			return;
-		} else {
-			try {
-				attachments[attachmentCounter] = new MimeBodyPart();
-				initMIMEBodyPart(attachments[attachmentCounter], file);
-				if (attachments[attachmentCounter] == null) {
-					System.out.println("null pointer");
-				}
-				this.attachmentCounter++;
-			}  catch (Exception e) {
-				e.printStackTrace();
+		}
+		if (mailType == FOR_INTERNET_SERVER) {
+			addAttachmentForInternetServer(attachment);
+		} else if (mailType == FOR_LOCAL_SERVER) {
+			addAttachmentForLocalServer(attachment);
+		}
+		this.attachmentCounter++;
+	}
+
+	public boolean attachmentsAreFull() {
+		return this.attachmentCounter >= ATTACHMENTS_CAPACITY;
+	}
+	
+	private void addAttachmentForInternetServer(File attachment) {
+		try {
+			attachmentsForInternetServer[attachmentCounter] = new MimeBodyPart();
+			initMIMEBodyPart(attachmentsForInternetServer[attachmentCounter], attachment);
+			if (attachmentsForInternetServer[attachmentCounter] == null) {
+				System.out.println("null pointer");
 			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 
+	private void addAttachmentForLocalServer(File attachment) {
+		attachmentsForLocalServer[attachmentCounter] = attachment;
+		System.out.println("Add attachment for local server");
+	}
+	
 	private void initMIMEBodyPart(MimeBodyPart mbp, File file) throws IOException, MessagingException {
 		mbp.setText("text");// 没有这一句的话,发送的附件会显示成一堆文本.
-		// add--------------
 		FileDataSource fds = new FileDataSource(file.getAbsolutePath());
 		mbp.setDataHandler(new DataHandler(fds));
 		mbp.setFileName(fds.getName());
-		// delete--------------
-		//mbp.attachFile(file);
-		//String encodedFileName = MimeUtility.encodeText(file.getName());
-		//mbp.setFileName(encodedFileName);
-	}
-
-	public boolean extraItemsFull() {
-		return this.attachmentCounter >= ATTACHMENTS_CAPACITY;
 	}
 
 	public void removeAllExtraItems() {
-		this.attachments = new MimeBodyPart[ATTACHMENTS_CAPACITY];
-		this.attachmentCounter = 0;
+		attachmentsForInternetServer = new MimeBodyPart[ATTACHMENTS_CAPACITY];
+		attachmentsForLocalServer = new File[ATTACHMENTS_CAPACITY];
+		attachmentCounter = 0;
 	}
 
 	public int getAttachmentsAmount() {
@@ -134,9 +146,9 @@ public class MailBean {
 	}
 
 	public void addAttachmentsToMultipart() {
-		for (int i = 0; i < this.attachmentCounter; i++) {
+		for (int i = 0; i < attachmentCounter; i++) {
 			try {
-				multipart.addBodyPart(this.attachments[i]);
+				multipart.addBodyPart(attachmentsForInternetServer[i]);
 			} catch (MessagingException e) {
 				e.printStackTrace();
 			}
@@ -167,7 +179,7 @@ public class MailBean {
 		this.sentTime = sendTime;
 	}
 
-	public String getAttachment1Name() {
+	/*public String getAttachment1Name() {
 		return attachment1Name;
 	}
 
@@ -189,8 +201,8 @@ public class MailBean {
 
 	public void setAttachment3Name(String attachment3) {
 		this.attachment3Name = attachment3;
-	}
-	
+	}*/
+
 	public void showPropertiesForLocalServer() {
 		Util.println("id: " + this.getId());
 		Util.println("sender: " + this.getSender());
@@ -198,9 +210,9 @@ public class MailBean {
 		Util.println("subject: " + this.getSubject());
 		Util.println("sender: " + this.getSender());
 		Util.println("content: " + this.getText());
-		Util.println("attachment 1 : " + this.getAttachment1Name());
+		/*Util.println("attachment 1 : " + this.getAttachment1Name());
 		Util.println("attachment 2 : " + this.getAttachment2Name());
-		Util.println("attachment 3 : " + this.getAttachment3Name());
-		
+		Util.println("attachment 3 : " + this.getAttachment3Name());*/
+
 	}
 }

@@ -16,6 +16,11 @@ import server.communicate.RequestThread;
 import util.Util;
 import beans.Constant;
 
+/**
+ * The mail server running  on the local machine.
+ * @author yubaoquan
+ *
+ */
 public class Server {
 
 	private boolean started = false;

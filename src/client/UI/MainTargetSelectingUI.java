@@ -4,7 +4,7 @@ import java.awt.FlowLayout;
 import java.awt.event.*;
 import javax.swing.*;
 
-import beans.UserLoginBean;
+import beans.UserBean;
 import client.net.down.ReceiveMail;
 
 
@@ -12,9 +12,9 @@ import client.net.down.ReceiveMail;
 
 public class MainTargetSelectingUI {
 
-	public MainTargetSelectingUI(UserLoginBean li) {
+	public MainTargetSelectingUI(UserBean li) {
 		super();
-		this.loginInformation = li;
+		this.user = li;
 	}
 
 	public static enum Selection {SEND,RECEIVE}
@@ -25,7 +25,7 @@ public class MainTargetSelectingUI {
 	private JButton confirmBotton = new JButton("OK");
 	private FlowLayout layout = new FlowLayout();
 	private MainTargetSelectingUIMonitor mainTargetSelectingUIMonitor = new MainTargetSelectingUIMonitor();
-	private UserLoginBean loginInformation;
+	private UserBean user;
 	
 	public void initUI() {
 		this.setAttributes();
@@ -51,7 +51,7 @@ public class MainTargetSelectingUI {
 		this.frame.add(this.panel);
 	}
 	public static void main(String[] args) {
-		UserLoginBean testLi = new UserLoginBean();
+		UserBean testLi = new UserBean();
 		new MainTargetSelectingUI(testLi).initUI();
 	}
 	
@@ -74,13 +74,13 @@ public class MainTargetSelectingUI {
 		
 		private void onSendOptionSelected() {
 			frame.dispose();
-			new EditMailUI(loginInformation).launch();
+			new EditMailUI(user).launch();
 		}
 		
 		private void onReceiveOptionSelected() {
 			System.out.println("receive");
 			try {
-				new ReceiveMail().loginAndReceiveMail(loginInformation);
+				new ReceiveMail().loginAndReceiveMail(user);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

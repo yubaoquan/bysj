@@ -1,6 +1,12 @@
 package beans;
 
-public class UserLoginBean {
+/**
+ *Class contains information for login to a mail server, such as user name, password,server name ,etc... 
+ *
+ * @author I3
+ *
+ */
+public class UserBean {
 
 	private String pop3ServerName;
 	private String smtpServerName;
@@ -8,9 +14,9 @@ public class UserLoginBean {
 	private String password;
 	private boolean localServerEnabled = false;
 	
-	public UserLoginBean() {}
+	public UserBean() {}
 	
-	public UserLoginBean(String serverName, String userName, String password) {
+	public UserBean(String serverName, String userName, String password) {
 		this.smtpServerName = serverName;
 		this.userName = userName;
 		this.password = password;

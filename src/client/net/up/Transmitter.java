@@ -25,9 +25,14 @@ import javax.mail.internet.MimeMessage;
 import util.Util;
 import beans.Constant;
 import beans.MailBean;
-import beans.UserLoginBean;
+import beans.UserBean;
 
-
+/**
+ * Class for sending mail to mail server
+ * 
+ * @author yubaoquan
+ *
+ */
 public class Transmitter {
 
 	private Properties props;
@@ -35,7 +40,7 @@ public class Transmitter {
 	private Transport transport = null;
 	private static final int PORT = 25;
 	private boolean loginSucceed = false;
-	private UserLoginBean loginInformation;
+	private UserBean user = null;
 	private static Transmitter transmitter = null;
 	private boolean sendSucceed = false;
 	private MimeMessage msg;
@@ -45,15 +50,15 @@ public class Transmitter {
 	private SocketChannel socketChannel = null;
 	private ByteBuffer buffer = null;
 	
-	public static Transmitter getInstance(UserLoginBean loginInformation) {
+	public static Transmitter getInstance(UserBean user) {
 		if (Transmitter.transmitter == null) {
-			transmitter = new Transmitter(loginInformation);
+			transmitter = new Transmitter(user);
 		}
 		return transmitter;
 	}
 	
-	private Transmitter(UserLoginBean loginInformation) {
-		this.loginInformation = loginInformation;
+	private Transmitter(UserBean user) {
+		this.user = user;
 		props = new Properties();
 		props.setProperty("mail.smtp.auth", "true");
 		props.setProperty("mail.transport.protocol", "smtp");
@@ -71,11 +76,11 @@ public class Transmitter {
 	
 	public boolean loginToServer() {
 		boolean loginSucceed = false;
-		if (loginInformation.isLocalServerEnabled()) {
+		if (user.isLocalServerEnabled()) {
 			loginSucceed = loginToLocalServer();
 		} else {
 			try {
-				this.transport.connect(loginInformation.getSmtpServerName(), loginInformation.getUserName(), loginInformation.getPassword());
+				this.transport.connect(user.getSmtpServerName(), user.getUserName(), user.getPassword());
 				loginSucceed = true;
 			} catch (AuthenticationFailedException e) {
 				System.out.println("认证失败!用户名或密码错误");
@@ -108,7 +113,7 @@ public class Transmitter {
 						System.out.println("完成连接!");
 						initReadAndWriteSelector();
 						
-						String requestString = Constant.USER_AUTHENTICATION + " " + loginInformation.getUserName().trim() + " " + loginInformation.getPassword().trim();
+						String requestString = Constant.USER_AUTHENTICATION + " " + user.getUserName().trim() + " " + user.getPassword().trim();
 						sendRequest(requestString);
 						
 						System.out.println("send finished!");
@@ -195,14 +200,22 @@ public class Transmitter {
 		
 	}
 	
-	public void sendMail(MailBean mailBean) {
-		this.fillMsg(mailBean);
-		this.sendMail();
+	public boolean sendMail(MailBean mail) {
+		if (user.isLocalServerEnabled()) {
+			sendMailToLocalServer();
+		} else {
+			fillMsg(mail);
+			sendMailToInternetServer();
+		}
+		//TODO
+		
+		return true;
 	}
 
 	public void fillMsg(MailBean mailBean) {
 		try {
-			InternetAddress fromAddress = new InternetAddress(transmitter.loginInformation.getUserName());
+			InternetAddress fromAddress = new InternetAddress(user.getUserName());
+			System.out.println("fillMsg, username: " + user.getUserName());
 			msg.setFrom(fromAddress);
 			msg.setSubject(mailBean.getSubject());
 			msg.setText(mailBean.getText());
@@ -210,13 +223,13 @@ public class Transmitter {
 				msg.setContent(mailBean.getMutipart());
 			}
 			msg.setSentDate(new Date());
-			msg.setRecipients(Message.RecipientType.TO, mailBean.getReceiverAddresses());
+			msg.setRecipients(Message.RecipientType.TO, mailBean.getInternetAddressees());
 		} catch (MessagingException e) {
 			e.printStackTrace();
 		}
 	}
 	
-	public void sendMail() {
+	public void sendMailToInternetServer() {
 		try {
 			transport.sendMessage(msg,msg.getAllRecipients());
 		} catch (MessagingException e) {
@@ -226,6 +239,11 @@ public class Transmitter {
 			return;
 		}
 		this.sendSucceed = true;
+	}
+	
+	private void sendMailToLocalServer() {
+		//TODO
+		System.out.println("Send mail to local server");
 	}
 	
 	public void closeConnection() {
@@ -243,7 +261,7 @@ public class Transmitter {
 	}
 	
 	public static void main(String[] args) {
-		UserLoginBean li = new UserLoginBean();
+		UserBean li = new UserBean();
 		boolean result = false;
 		/*li.setUserName("username2");
 		li.setPassword("password2");

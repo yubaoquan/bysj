@@ -24,7 +24,7 @@ import javax.swing.border.MatteBorder;
 import util.Util;
 import client.UI.EditMailUI.EditMailUICommandCode;
 import beans.MailBean;
-import beans.UserLoginBean;
+import beans.UserBean;
 
 public class MailDetailViewUI extends JFrame {
 
@@ -138,10 +138,11 @@ public class MailDetailViewUI extends JFrame {
 	}
 
 	private void setAttachmentsNames() {
-		String shortAttachment1Name = "1." + Util.getShortStringWithEllipsis(mail.getAttachment1Name(), 10);
-		String shortAttachment2Name = "2." + Util.getShortStringWithEllipsis(mail.getAttachment2Name(), 10);
-		String shortAttachment3Name = "3." + Util.getShortStringWithEllipsis(mail.getAttachment3Name(), 10);
-		String attachmentsNames = "附件: " + shortAttachment1Name + " " +  shortAttachment2Name + " " +shortAttachment3Name;
+		//TODO
+	//	String shortAttachment1Name = "1." + Util.getShortStringWithEllipsis(mail.getAttachment1Name(), 10);
+	//	String shortAttachment2Name = "2." + Util.getShortStringWithEllipsis(mail.getAttachment2Name(), 10);
+	//	String shortAttachment3Name = "3." + Util.getShortStringWithEllipsis(mail.getAttachment3Name(), 10);
+		String attachmentsNames = "附件: ";// + shortAttachment1Name + " " +  shortAttachment2Name + " " +shortAttachment3Name;
 		attachmentNameLabel.setText(attachmentsNames);
 	}
 
@@ -192,9 +193,9 @@ public class MailDetailViewUI extends JFrame {
 		mail.setAddressee("收信人");
 		mail.setSubject("标题");
 		mail.setText("正文");
-		mail.setAttachment1Name("系统提示");
+		/*mail.setAttachment1Name("系统提示");
 		mail.setAttachment2Name("很抱歉, 操作执行不成功！");
-		mail.setAttachment3Name("现网问题跟踪报告模板更改通知");
+		mail.setAttachment3Name("现网问题跟踪报告模板更改通知");*/
 		
 		MailURLLabel mailLabel = new MailURLLabel(mail);
 		List<MailURLLabel> list = new ArrayList<>();

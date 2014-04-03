@@ -7,6 +7,7 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.sql.Timestamp;
 
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
@@ -20,14 +21,17 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.MatteBorder;
 
-import beans.UserLoginBean;
 import beans.MailBean;
-import client.net.up.LoginTool;
+import beans.UserBean;
 import client.net.up.Transmitter;
 
-
-
-
+/**
+ * Class for editing new mail.
+ * After editing the new mail, user use the UI to call the Transmitter to send the mail.
+ * 
+ * @author yubaoquan
+ *
+ */
 public class EditMailUI {
 	public static enum EditMailUICommandCode {
 		SEND, ADD_EXTRA_ITEM, REMOVE_EXTRA_ITEM
@@ -35,7 +39,7 @@ public class EditMailUI {
 
 	private MailBean mail = new MailBean();
 	private EditMailUIMonitor editMailUIMonitor = new EditMailUIMonitor();
-	private UserLoginBean loginInformation;
+	private UserBean user;
 	private JFrame frame = new JFrame("编辑邮件内容");
 
 	private JPanel mainPanel = new JPanel();
@@ -66,8 +70,8 @@ public class EditMailUI {
 	private JLabel extraItemNameLabel = new JLabel("附件:");
 	private JButton sendButton = new JButton("发送");
 
-	public EditMailUI(UserLoginBean li) {
-		loginInformation = li;
+	public EditMailUI(UserBean li) {
+		user = li;
 	}
 
 	public void launch() {
@@ -78,7 +82,7 @@ public class EditMailUI {
 	private void intiUI() {
 		setAttributes();
 		addComponents();
-		
+
 	}
 
 	private void setAttributes() {
@@ -94,6 +98,7 @@ public class EditMailUI {
 		frame.setResizable(false);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
+
 	private void setLayouts() {
 		mainPanel.setLayout(new BorderLayout());
 		senderNamePanel.setLayout(new BorderLayout());
@@ -109,10 +114,10 @@ public class EditMailUI {
 		centerSouthEastPanel.setLayout(new FlowLayout());
 		centerPanel.setBorder(new MatteBorder(1, 1, 1, 1, Color.BLUE));
 	}
-	
+
 	private void configureOtherComponents() {
 		mainTextArea.setBorder(new MatteBorder(1, 1, 1, 1, Color.GREEN));
-		senderNameTextField.setText(loginInformation.getUserName());
+		senderNameTextField.setText(user.getUserName());
 		senderNameTextField.setEditable(false);
 
 		addExtraItemButton.addActionListener(editMailUIMonitor);
@@ -162,7 +167,7 @@ public class EditMailUI {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		UserLoginBean loginBean = new UserLoginBean();
+		UserBean loginBean = new UserBean();
 		loginBean.setUserName("user");
 		new EditMailUI(loginBean).launch();
 
@@ -176,10 +181,10 @@ public class EditMailUI {
 			commandCode = EditMailUICommandCode.valueOf(e.getActionCommand());
 			switch (commandCode) {
 				case ADD_EXTRA_ITEM:
-					onAddExtraItemButtonClick();
+					onAddAttachmentButtonClick();
 					break;
 				case REMOVE_EXTRA_ITEM:
-					onRemoveExtraItemButtonClick();
+					onRemoveAttachmentButtonClick();
 					break;
 				case SEND:
 					onSendButtonClick();
@@ -190,50 +195,39 @@ public class EditMailUI {
 			}
 		}
 
-		private void onAddExtraItemButtonClick() {
+		private void onAddAttachmentButtonClick() {
 			JFileChooser fc = new JFileChooser();// fc.set
 			fc.setDialogTitle("选择附件");
 			fc.showDialog(frame, "选择");
-			File extraItemFile = fc.getSelectedFile();
-			if (extraItemFile != null) {
-				System.out.println(extraItemFile.getName());
-				changeExtraItemNameLabel(extraItemFile);
-				mail.addExtraItem(extraItemFile);
-				if (mail.extraItemsFull()) {
+			File attachment = fc.getSelectedFile();
+			if (attachment != null) {
+				System.out.println(attachment.getName());
+				changeAttachmentLabel(attachment.getName());
+				if (user.isLocalServerEnabled()) {
+					mail.addAttachment(attachment, MailBean.FOR_LOCAL_SERVER);
+				} else {
+					mail.addAttachment(attachment, MailBean.FOR_INTERNET_SERVER);
+				}
+				if (mail.attachmentsAreFull()) {
 					addExtraItemButton.setEnabled(false);
 				}
 			}
 		}
 
-		private void changeExtraItemNameLabel(File extraItemFile) {
-			StringBuffer text = new StringBuffer(extraItemNameLabel.getText());
-			String extraItemFileName = extraItemFile.getName();
-			int shortNameLength = extraItemFileName.length() > 10 ? 10 : extraItemFileName.length();
-			String shortFileName = extraItemFile.getName().substring(0, shortNameLength) + "..,";
-
-			if (mail.getAttachmentsAmount() == mail.ATTACHMENTS_CAPACITY - 1) {
-				shortFileName = shortFileName.substring(0, shortFileName.length() - 1);
-			}
-			text.append(shortFileName);
-			extraItemNameLabel.setText(new String(text));
-		}
-
-		private void onRemoveExtraItemButtonClick() {
+		private void onRemoveAttachmentButtonClick() {
 			mail.removeAllExtraItems();
 			extraItemNameLabel.setText("附件:");
 			addExtraItemButton.setEnabled(true);
 		}
 
 		private void onSendButtonClick() {
-
 			if (fillMail()) {
-
-				Transmitter.getInstance(loginInformation).sendMail(mail);
-				if (Transmitter.getInstance(loginInformation).sendSucceed()) {
+				boolean sendSucceed = Transmitter.getInstance(user).sendMail(mail);
+				if (sendSucceed) {
 					int option = JOptionPane.showConfirmDialog(frame, (String) "发送成功,是否再发一个.", "已发送", JOptionPane.YES_NO_OPTION);
 					switch (option) {
 						case 0:
-							resend();
+							prepareForNextSend();
 							break;
 						case 1:
 							terminate();
@@ -246,48 +240,90 @@ public class EditMailUI {
 			}
 		}
 
-		private void resend() {
-			cleanForm();
-			cleanMailBean();
-		}
+	}
 
-		private void cleanForm() {
-			EditMailUI.this.receiverAddressTextField.setText("");
-			EditMailUI.this.subjectTextField.setText("");
-			EditMailUI.this.mainTextArea.setText("");
-			EditMailUI.this.extraItemNameLabel.setText("附件：");
-		}
-		
-		private void cleanMailBean() {
+	private boolean fillMail() {
+		try {
+			fillRespectiveProperties();
+		} catch (AddressException e) {
+			System.out.println("wrong address");
+			JOptionPane.showMessageDialog(frame, (String) "收信人地址填写不正确,请检查后重新输入.", "错误", JOptionPane.WARNING_MESSAGE);
 			mail = new MailBean();
+			return false;
 		}
-		
-		private void terminate() {
-			Transmitter.getInstance(loginInformation).closeConnection();
-			System.exit(0);
-		}
+		fillCommonProperties();
+		return true;
+	}
 
-		private boolean fillMail() {
-			String receiverAddress = EditMailUI.this.receiverAddressTextField.getText();
-			String subject = EditMailUI.this.subjectTextField.getText();
-			String text = EditMailUI.this.mainTextArea.getText();
-			InternetAddress[] receiversAddressArray = new InternetAddress[1];
-			try {
-				receiversAddressArray[0] = new InternetAddress(receiverAddress);
-			} catch (AddressException e) {
-				System.out.println("wrong address");
-				JOptionPane.showMessageDialog(frame, (String) "收信人地址填写不正确,请检查后重新输入.", "错误", JOptionPane.WARNING_MESSAGE);
-				mail = new MailBean();
-				//extraItemNameLabel.setText("附件:");
-				return false;
-			}
-			mail.setSubject(subject);
-			mail.setText(text);
-			if (mail.getAttachmentsAmount() > 0) {
-				mail.addAttachmentsToMultipart();
-			}
-			mail.setReceiverAddresses(receiversAddressArray);
-			return true;
+	private void fillRespectiveProperties() throws AddressException {
+		if (user.isLocalServerEnabled()) {
+			fillMailForLocalServer();
+		} else {
+			fillMailForInternetServer();
 		}
+	}
+
+	private void fillCommonProperties() {
+		String subject = EditMailUI.this.subjectTextField.getText();
+		String text = EditMailUI.this.mainTextArea.getText();
+		Timestamp sentTime = new Timestamp(System.currentTimeMillis());
+		mail.setSubject(subject);
+		mail.setText(text);
+		mail.setSentTime(sentTime);
+	}
+
+	private void fillMailForLocalServer() {
+		// TODO Auto-generated method stub
+		System.out.println("Fill mail for local server");
+		mail.setSender(user.getUserName());
+	}
+
+	private void fillMailForInternetServer() throws AddressException {
+		// TODO Auto-generated method stub
+		System.out.println("Fill mail for Internet server");
+		fillMailAddressees();
+		if (mail.getAttachmentsAmount() > 0) {
+			mail.addAttachmentsToMultipart();
+		}
+	}
+
+	private void fillMailAddressees() throws AddressException {
+		String addressee = EditMailUI.this.receiverAddressTextField.getText();
+		InternetAddress[] addresseeArray = new InternetAddress[1];
+		addresseeArray[0] = new InternetAddress(addressee);
+		mail.setInternetAddressees(addresseeArray);
+	}
+
+	private void changeAttachmentLabel(String attachmentName) {
+		StringBuffer text = new StringBuffer(extraItemNameLabel.getText());
+		int shortNameLength = attachmentName.length() > 10 ? 10 : attachmentName.length();
+		String shortFileName = attachmentName.substring(0, shortNameLength) + ".., ";
+
+		if (mail.getAttachmentsAmount() == mail.ATTACHMENTS_CAPACITY - 1) {
+			shortFileName = shortFileName.substring(0, shortFileName.length() - 1);
+		}
+		text.append(shortFileName);
+		extraItemNameLabel.setText(new String(text));
+	}
+
+	private void prepareForNextSend() {
+		cleanForm();
+		cleanMailBean();
+	}
+
+	private void cleanForm() {
+		EditMailUI.this.receiverAddressTextField.setText("");
+		EditMailUI.this.subjectTextField.setText("");
+		EditMailUI.this.mainTextArea.setText("");
+		EditMailUI.this.extraItemNameLabel.setText("附件：");
+	}
+
+	private void cleanMailBean() {
+		mail = new MailBean();
+	}
+
+	private void terminate() {
+		Transmitter.getInstance(user).closeConnection();
+		System.exit(0);
 	}
 }

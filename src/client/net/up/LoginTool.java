@@ -1,11 +1,11 @@
 package client.net.up;
 
 import client.UI.*;
-import beans.UserLoginBean;
+import beans.UserBean;
 
 public class LoginTool {
 
-	public static boolean loginInformationValid(UserLoginBean loginInformation) {
+	public static boolean loginInformationValid(UserBean loginInformation) {
 		if (loginInformation == null) {
 			System.out.println("loginInformation == null");
 		}
@@ -20,15 +20,15 @@ public class LoginTool {
 
 	public static void selectSendOrReceive(LoginUI parentUI) {
 		parentUI.dispose();
-		UserLoginBean li = parentUI.getLoginInformation();
+		UserBean li = parentUI.getLoginInformation();
 		new MainTargetSelectingUI(li).initUI();
 	}
 
-	public static boolean loginToServer(UserLoginBean li) {
+	public static boolean loginToServer(UserBean li) {
 		return Transmitter.getInstance(li).loginToServer();
 	}
 	
-	public static boolean loginServerSucceed(UserLoginBean li) {
+	public static boolean loginServerSucceed(UserBean li) {
 		return Transmitter.getInstance(li).loginServerSucceed();
 	}
 	
