@@ -49,14 +49,14 @@ public class Transmitter {
 	private Selector selectorForWrite = null;
 	private SocketChannel socketChannel = null;
 	private ByteBuffer buffer = null;
-	
+
 	public static Transmitter getInstance(UserBean user) {
 		if (Transmitter.transmitter == null) {
 			transmitter = new Transmitter(user);
 		}
 		return transmitter;
 	}
-	
+
 	private Transmitter(UserBean user) {
 		this.user = user;
 		props = new Properties();
@@ -70,10 +70,11 @@ public class Transmitter {
 			e.printStackTrace();
 		}
 	}
+
 	public boolean loginServerSucceed() {
 		return this.loginSucceed;
 	}
-	
+
 	public boolean loginToServer() {
 		boolean loginSucceed = false;
 		if (user.isLocalServerEnabled()) {
@@ -94,7 +95,7 @@ public class Transmitter {
 		}
 		return loginSucceed;
 	}
-	
+
 	private boolean loginToLocalServer() {
 		boolean loginSucceed = false;
 		try {
@@ -112,10 +113,10 @@ public class Transmitter {
 						socketChannel.finishConnect();
 						System.out.println("完成连接!");
 						initReadAndWriteSelector();
-						
+
 						String requestString = Constant.USER_AUTHENTICATION + " " + user.getUserName().trim() + " " + user.getPassword().trim();
 						sendRequest(requestString);
-						
+
 						System.out.println("send finished!");
 						String responseString = receiveResponse();
 						if (responseString.equals(Constant.LOGIN_SUCCEED)) {
@@ -137,7 +138,7 @@ public class Transmitter {
 		socketChannel.configureBlocking(false);
 		initSelector = Selector.open();
 		socketChannel.register(initSelector, SelectionKey.OP_CONNECT);
-		
+
 		socketChannel.connect(socketAddress);
 		initSelector.select();
 	}
@@ -145,70 +146,73 @@ public class Transmitter {
 	private void initReadAndWriteSelector() throws IOException, ClosedChannelException {
 		selectorForRead = Selector.open();
 		selectorForWrite = Selector.open();
-		
+
 		socketChannel.register(selectorForRead, SelectionKey.OP_READ);
 		socketChannel.register(selectorForWrite, SelectionKey.OP_WRITE);
 	}
 
-	private void sendRequest(String requestString) throws Exception {
+	private void sendRequest(String requestString) {
 		Util.println("send request: " + requestString);
-		while (selectorForWrite.select() > 0) {
-			Set<SelectionKey> selectionKeys = selectorForWrite.selectedKeys();
-			Iterator<SelectionKey> it = selectionKeys.iterator();
-			while (it.hasNext()) {
-				SelectionKey selectionKey = it.next();
-				it.remove();
-				if (selectionKey.isWritable()) {
-					SocketChannel channel = (SocketChannel) selectionKey.channel();
-					buffer = ByteBuffer.wrap(requestString.getBytes());
-					System.out.println("write...");
-					channel.write(buffer);
-					System.out.println("write:" + requestString);
-					return;
+		try {
+			while (selectorForWrite.select() > 0) {
+				Set<SelectionKey> selectionKeys = selectorForWrite.selectedKeys();
+				Iterator<SelectionKey> it = selectionKeys.iterator();
+				while (it.hasNext()) {
+					SelectionKey selectionKey = it.next();
+					it.remove();
+					if (selectionKey.isWritable()) {
+						SocketChannel channel = (SocketChannel) selectionKey.channel();
+						buffer = ByteBuffer.wrap(requestString.getBytes());
+						System.out.println("write...");
+						channel.write(buffer);
+						System.out.println("write:" + requestString);
+						return;
+					}
 				}
 			}
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
-	
-	private String receiveResponse() throws IOException, Exception {
+
+	private String receiveResponse() {
 		String responseString = null;
-		while (selectorForRead.select() > 0) {
-			Set<SelectionKey> selectionKeys = selectorForRead.selectedKeys();
-			Iterator<SelectionKey> it = selectionKeys.iterator();
-			while (it.hasNext()) {
-				SelectionKey selectionKey = it.next();
-				it.remove();
-				if (selectionKey.isReadable()) {
-					SocketChannel channel = (SocketChannel) selectionKey.channel();
-					buffer = ByteBuffer.allocate(50);
-					System.out.println("read response...");
+		try {
+			while (selectorForRead.select() > 0) {
+				Set<SelectionKey> selectionKeys = selectorForRead.selectedKeys();
+				Iterator<SelectionKey> it = selectionKeys.iterator();
+				while (it.hasNext()) {
+					SelectionKey selectionKey = it.next();
+					it.remove();
+					if (selectionKey.isReadable()) {
+						SocketChannel channel = (SocketChannel) selectionKey.channel();
+						buffer = ByteBuffer.allocate(50);
+						System.out.println("read response...");
 
-					channel.read(buffer);
+						channel.read(buffer);
 
-					buffer.flip();
-					byte[] array = new byte[1024];
-					buffer.get(array, 0, buffer.remaining());
-					responseString = new String(array).trim();
-					System.out.println("response:" + responseString);
-					return responseString;
+						buffer.flip();
+						byte[] array = new byte[1024];
+						buffer.get(array, 0, buffer.remaining());
+						responseString = new String(array).trim();
+						System.out.println("response:" + responseString);
+						return responseString;
+					}
 				}
 			}
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 		return responseString;
 	}
-	public void sendMailToLocalServer(MailBean mailBean) {
-		
-	}
-	
+
 	public boolean sendMail(MailBean mail) {
 		if (user.isLocalServerEnabled()) {
-			sendMailToLocalServer();
+			sendMailToLocalServer(mail);
 		} else {
 			fillMsg(mail);
 			sendMailToInternetServer();
 		}
-		//TODO
-		
 		return true;
 	}
 
@@ -228,10 +232,10 @@ public class Transmitter {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void sendMailToInternetServer() {
 		try {
-			transport.sendMessage(msg,msg.getAllRecipients());
+			transport.sendMessage(msg, msg.getAllRecipients());
 		} catch (MessagingException e) {
 			this.sendSucceed = false;
 			e.printStackTrace();
@@ -240,12 +244,41 @@ public class Transmitter {
 		}
 		this.sendSucceed = true;
 	}
-	
-	private void sendMailToLocalServer() {
-		//TODO
+
+	private void sendMailToLocalServer(MailBean mail) {
 		System.out.println("Send mail to local server");
+		StringBuffer request = new StringBuffer();
+		request.append(Constant.SEND_MAIL + " ");
+		request.append(mail.getSender() + " ");
+		request.append(mail.getAddressee() + " ");
+		request.append(mail.getSendTime().toString());
+		request.trimToSize();
+		sendRequest(request.toString());
+		receiveResponse();
+		
+		request = new StringBuffer();
+		request.append(mail.getText());
+		request.trimToSize();
+		sendRequest(request.toString());
+		receiveResponse();
+		
+		request = new StringBuffer();
+		int attachmentsAmount = mail.getAttachmentsAmount();
+		if (attachmentsAmount <= 0) {
+			request.append("0");
+			request.trimToSize();
+			sendRequest(request.toString());
+			receiveResponse();
+			return;
+		} else {
+			request.append("" + attachmentsAmount);
+			request.trimToSize();
+			sendRequest(request.toString());
+			receiveResponse();
+			//TODO
+		}
 	}
-	
+
 	public void closeConnection() {
 		if (transport.isConnected()) {
 			try {
@@ -255,18 +288,19 @@ public class Transmitter {
 			}
 		}
 	}
-	
+
 	public boolean sendSucceed() {
 		return sendSucceed;
 	}
-	
+
 	public static void main(String[] args) {
 		UserBean li = new UserBean();
 		boolean result = false;
-		/*li.setUserName("username2");
-		li.setPassword("password2");
-		boolean result = new Transmitter(li).loginToLocalServer();
-		Util.println("result: " + result);*/
+		/*
+		 * li.setUserName("username2"); li.setPassword("password2"); boolean
+		 * result = new Transmitter(li).loginToLocalServer();
+		 * Util.println("result: " + result);
+		 */
 		li.setUserName("admin");
 		li.setPassword("admin");
 		result = new Transmitter(li).loginToLocalServer();

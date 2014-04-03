@@ -75,6 +75,10 @@ public class MailBean {
 		return text;
 	}
 
+	public void setContent(String content) {
+		setText(content);
+	}
+	
 	public void setText(String text) {
 		this.text = text;
 	}
