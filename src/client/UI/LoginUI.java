@@ -5,7 +5,7 @@ import java.awt.event.*;
 import javax.swing.*;
 
 import beans.UserBean;
-import client.net.up.LoginTool;
+import client.net.up.LoginFacade;
 import client.thread.LoginThread;
 
 public class LoginUI {
@@ -141,9 +141,9 @@ public class LoginUI {
 			if (!informationValid()) {
 				return;
 			}
-			boolean loginSucceed = LoginTool.loginToServer(loginInformation);
+			boolean loginSucceed = LoginFacade.loginToServer(loginInformation);
 			if (loginSucceed) {
-				LoginTool.selectSendOrReceive(LoginUI.this);
+				LoginFacade.selectSendOrReceive(LoginUI.this);
 			} else {
 				JOptionPane.showMessageDialog(frame, (String) "登录失败.请确认用户名和密码填写正确并且网络连接正常.", "错误", JOptionPane.WARNING_MESSAGE);
 			}
@@ -154,7 +154,7 @@ public class LoginUI {
 				JOptionPane.showMessageDialog(frame, (String) "请选择邮件服务器.", "错误", JOptionPane.WARNING_MESSAGE);
 				return false;
 			}
-			if (!LoginTool.loginInformationValid(loginInformation)) {
+			if (!LoginFacade.loginInformationValid(loginInformation)) {
 				JOptionPane.showMessageDialog(frame, (String) "用户名和密码不能为空,请检查后重新输入.", "错误", JOptionPane.WARNING_MESSAGE);
 				return false;
 			}

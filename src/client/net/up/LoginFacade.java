@@ -3,7 +3,7 @@ package client.net.up;
 import client.UI.*;
 import beans.UserBean;
 
-public class LoginTool {
+public class LoginFacade {
 
 	public static boolean loginInformationValid(UserBean loginInformation) {
 		if (loginInformation == null) {
