@@ -4,9 +4,11 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
@@ -250,53 +252,36 @@ public class RequestThread implements Runnable {
 
 	private void writeToFile(File attachment, long fileLength) throws IOException, FileNotFoundException {
 		PrintStream ps = null;
+		ServerSocket serverSocket = null;
+		FileOutputStream fos = null;
+		InputStream is = null;
 		try {
-			// 一次创建PrintStream输出流
 			ps = new PrintStream(new FileOutputStream("E:/log.txt"));
-			// 将标准输出重定向到ps输出流
 			System.setOut(ps);
-			// 向标准输出一个字符串
-
-			while (selectorForRead.select() > 0) {
-				Set<SelectionKey> selectionKeys = selectorForRead.selectedKeys();
-				Iterator<SelectionKey> it = selectionKeys.iterator();
-				while (it.hasNext()) {
-					System.out.println("it.hasNext()");
-					SelectionKey selectionKey = it.next();
-					it.remove();
-					if (selectionKey.isReadable()) {
-						FileOutputStream fis = new FileOutputStream(attachment);
-						FileChannel fc = fis.getChannel();
-						ByteBuffer fileBuffer = ByteBuffer.allocate(1024);
-						SocketChannel channel = (SocketChannel) selectionKey.channel();
-						int size = 0;
-						int totalReadSize = 0;
-						while (true) {
-							size = channel.read(fileBuffer);
-							totalReadSize += size;
-							if (size != 0) {
-								System.out.println("total read " + totalReadSize);
-							}
-							fileBuffer.flip();
-							fc.write(fileBuffer);
-							fileBuffer.clear();
-							if (totalReadSize == fileLength) {
-								break;
-							}
-						}
-						fc.close();
-						fis.close();
-						System.out.println("Receive file finish.");
-						return;
-					}
-				}
+			
+			System.out.println("File size: " + attachment.length());
+			serverSocket = new ServerSocket(8866);
+			Socket s = serverSocket.accept();
+			is = s.getInputStream();
+			fos = new FileOutputStream(attachment);
+			byte[] buffer = new byte[1024];
+			int readSize = 0;
+			int totalRead = 0;
+			while ((readSize = is.read(buffer)) > 0) {
+				totalRead += readSize;
+				System.out.println("Total read: " + totalRead);
+				fos.write(buffer, 0, readSize);
+				buffer = new byte[1024];
 			}
+			System.out.println("receive ok");
+
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		} finally {
-			if (ps != null) {
-				ps.close();
-			}
+			is.close();
+			serverSocket.close();
+			fos.close();
+			ps.close();
 		}
 	}
 

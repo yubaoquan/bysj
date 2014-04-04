@@ -4,12 +4,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
-import java.nio.channels.FileChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
@@ -273,7 +274,6 @@ public class Transmitter {
 		request.trimToSize();
 		sendRequest(request.toString());
 		receiveResponse();
-		// TODO
 		System.out.println("Previous step execute OK.\n Now sending attachment[s]...");
 		sendAttachment(mail);
 	}
@@ -304,66 +304,46 @@ public class Transmitter {
 				sendFile(attachment);
 				receiveResponse();
 			}
-			// TODO
 		}
 	}
 
 	private void sendFile(File file) {
+		PrintStream ps = null;
+		Socket socket = null;
+		OutputStream os = null;
+		FileInputStream fis = null;
 		try {
-			PrintStream ps = null;
-			// 一次创建PrintStream输出流
 			ps = new PrintStream(new FileOutputStream("E:/TransmitterLog.txt"));
-			// 将标准输出重定向到ps输出流
 			System.setOut(ps);
-			// 向标准输出一个字符串
-			while (selectorForWrite.select() > 0) {
-				Set<SelectionKey> selectionKeys = selectorForWrite.selectedKeys();
-				Iterator<SelectionKey> it = selectionKeys.iterator();
-				while (it.hasNext()) {
-					SelectionKey selectionKey = it.next();
-					it.remove();
-					if (selectionKey.isWritable()) {
-						FileInputStream fis = new FileInputStream(file);
-						FileChannel fc = fis.getChannel();
-						ByteBuffer fileBuffer = ByteBuffer.allocate(1024);
-						SocketChannel channel = (SocketChannel) selectionKey.channel();
-						long totalRead = 0;
-						long totalWrite = 0;
-						System.out.println("File length: " + file.length());
-						int readSize = 0;
-						while (true) {
-							if (totalRead != file.length()) {
-								if (totalRead == totalWrite) {
-									readSize = fc.read(fileBuffer);
-									totalRead += readSize;
-									System.out.println("fc.read(fileBuffer) " + totalRead);
-								}
-							}
-						//	System.out.println("Before flip, remaining: " + fileBuffer.remaining());
-							fileBuffer.flip();
-						//	System.out.println("After flip, remaining: " + fileBuffer.remaining());
-							while (true) {
-								int writeSize = channel.write(fileBuffer);
-								totalWrite += writeSize;
-								if (writeSize == 0) {
-									fileBuffer.clear();
-									break;
-								}
-								System.out.println(totalWrite + " bytes were writen.");
-							}
-							if (totalWrite == file.length()) {
-								break;
-							}
-						}
-						fc.close();
-						fis.close();
-						System.out.println("Send file finish.");
-						return;
-					}
-				}
+
+			fis = new FileInputStream(file);
+			int readSize = 0;
+			long totalRead = 0;
+			System.out.println("File length: " + file.length());
+			socket = new Socket("127.0.0.1", 8866);
+			os = socket.getOutputStream();
+			byte[] buffer = new byte[1024];
+			while ((readSize = fis.read(buffer)) > 0) {
+				totalRead += readSize;
+				System.out.println("total read " + totalRead);
+				os.write(buffer, 0, readSize);
+				buffer = new byte[1024];
 			}
+			os.close();
+			socket.close();
+			fis.close();
+			System.out.println("Send file finish.");
 		} catch (Exception e) {
 			e.printStackTrace();
+		} finally {
+			try {
+				os.close();
+				socket.close();
+				fis.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			ps.close();
 		}
 	}
 
