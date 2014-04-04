@@ -1,10 +1,15 @@
 package client.net.up;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
+import java.nio.channels.FileChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
@@ -162,9 +167,10 @@ public class Transmitter {
 					it.remove();
 					if (selectionKey.isWritable()) {
 						SocketChannel channel = (SocketChannel) selectionKey.channel();
-						buffer = ByteBuffer.wrap(requestString.getBytes());
+						buffer = ByteBuffer.wrap(requestString.getBytes("UTF-8"));
 						System.out.println("write...");
 						channel.write(buffer);
+						// channel.close();
 						System.out.println("write:" + requestString);
 						return;
 					}
@@ -255,13 +261,25 @@ public class Transmitter {
 		request.trimToSize();
 		sendRequest(request.toString());
 		receiveResponse();
-		
+
+		request = new StringBuffer();
+		request.append(mail.getSubject());
+		request.trimToSize();
+		sendRequest(request.toString());
+		receiveResponse();
+
 		request = new StringBuffer();
 		request.append(mail.getText());
 		request.trimToSize();
 		sendRequest(request.toString());
 		receiveResponse();
-		
+		// TODO
+		System.out.println("Previous step execute OK.\n Now sending attachment[s]...");
+		sendAttachment(mail);
+	}
+
+	private void sendAttachment(MailBean mail) {
+		StringBuffer request;
 		request = new StringBuffer();
 		int attachmentsAmount = mail.getAttachmentsAmount();
 		if (attachmentsAmount <= 0) {
@@ -275,16 +293,96 @@ public class Transmitter {
 			request.trimToSize();
 			sendRequest(request.toString());
 			receiveResponse();
-			//TODO
+
+			for (int i = 0; i < mail.getAttachmentsAmount(); i++) {
+				File attachment = mail.getAttachment(i);
+				System.out.println("Attachment[" + i + "]: " + attachment.getName());
+				sendRequest(attachment.getName());
+				receiveResponse();
+				sendRequest("" + attachment.length());
+				receiveResponse();
+				sendFile(attachment);
+				receiveResponse();
+			}
+			// TODO
+		}
+	}
+
+	private void sendFile(File file) {
+		try {
+			PrintStream ps = null;
+			// 一次创建PrintStream输出流
+			ps = new PrintStream(new FileOutputStream("E:/TransmitterLog.txt"));
+			// 将标准输出重定向到ps输出流
+			System.setOut(ps);
+			// 向标准输出一个字符串
+			while (selectorForWrite.select() > 0) {
+				Set<SelectionKey> selectionKeys = selectorForWrite.selectedKeys();
+				Iterator<SelectionKey> it = selectionKeys.iterator();
+				while (it.hasNext()) {
+					SelectionKey selectionKey = it.next();
+					it.remove();
+					if (selectionKey.isWritable()) {
+						FileInputStream fis = new FileInputStream(file);
+						FileChannel fc = fis.getChannel();
+						ByteBuffer fileBuffer = ByteBuffer.allocate(1024);
+						SocketChannel channel = (SocketChannel) selectionKey.channel();
+						long totalRead = 0;
+						long totalWrite = 0;
+						System.out.println("File length: " + file.length());
+						int readSize = 0;
+						while (true) {
+							if (totalRead != file.length()) {
+								if (totalRead == totalWrite) {
+									readSize = fc.read(fileBuffer);
+									totalRead += readSize;
+									System.out.println("fc.read(fileBuffer) " + totalRead);
+								}
+							}
+						//	System.out.println("Before flip, remaining: " + fileBuffer.remaining());
+							fileBuffer.flip();
+						//	System.out.println("After flip, remaining: " + fileBuffer.remaining());
+							while (true) {
+								int writeSize = channel.write(fileBuffer);
+								totalWrite += writeSize;
+								if (writeSize == 0) {
+									fileBuffer.clear();
+									break;
+								}
+								System.out.println(totalWrite + " bytes were writen.");
+							}
+							if (totalWrite == file.length()) {
+								break;
+							}
+						}
+						fc.close();
+						fis.close();
+						System.out.println("Send file finish.");
+						return;
+					}
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 
 	public void closeConnection() {
-		if (transport.isConnected()) {
+		if (user.isLocalServerEnabled()) {
+			sendRequest(Constant.EXIT + " ");
 			try {
-				transport.close();
-			} catch (MessagingException e) {
+				socketChannel.close();
+				System.out.println("Socket channel closed!");
+			} catch (IOException e) {
 				e.printStackTrace();
+			}
+		} else {
+			if (transport.isConnected()) {
+				try {
+					transport.close();
+				} catch (MessagingException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 	}
@@ -296,11 +394,6 @@ public class Transmitter {
 	public static void main(String[] args) {
 		UserBean li = new UserBean();
 		boolean result = false;
-		/*
-		 * li.setUserName("username2"); li.setPassword("password2"); boolean
-		 * result = new Transmitter(li).loginToLocalServer();
-		 * Util.println("result: " + result);
-		 */
 		li.setUserName("admin");
 		li.setPassword("admin");
 		result = new Transmitter(li).loginToLocalServer();

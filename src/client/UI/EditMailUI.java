@@ -59,7 +59,7 @@ public class EditMailUI {
 	private JLabel senderLabel = new JLabel("发件人:             ");
 	private JTextField senderNameTextField = new JTextField();
 	private JLabel receiverLabel = new JLabel("收件人:             ");
-	private JTextField receiverAddressTextField = new JTextField();
+	private JTextField addresseeTextField = new JTextField();
 
 	private JLabel subjectLabel = new JLabel("标题");
 	private JTextField subjectTextField = new JTextField();
@@ -134,7 +134,7 @@ public class EditMailUI {
 		senderNamePanel.add(senderLabel, BorderLayout.WEST);
 		senderNamePanel.add(senderNameTextField, BorderLayout.CENTER);
 		receiverNamePanel.add(receiverLabel, BorderLayout.WEST);
-		receiverNamePanel.add(receiverAddressTextField, BorderLayout.CENTER);
+		receiverNamePanel.add(addresseeTextField, BorderLayout.CENTER);
 
 		centerSouthWestPanel.add(addExtraItemButton);
 		centerSouthCenterPanel.add(extraItemNameLabel);
@@ -265,7 +265,13 @@ public class EditMailUI {
 
 	private void fillCommonProperties() {
 		String subject = EditMailUI.this.subjectTextField.getText();
+		if (subject.length() == 0) {
+			subject = "[无标题]";
+		}
 		String text = EditMailUI.this.mainTextArea.getText();
+		if (text.length() == 0) {
+			text = "[无内容]";
+		}
 		Timestamp sentTime = new Timestamp(System.currentTimeMillis());
 		mail.setSubject(subject);
 		mail.setText(text);
@@ -276,6 +282,7 @@ public class EditMailUI {
 		// TODO Auto-generated method stub
 		System.out.println("Fill mail for local server");
 		mail.setSender(user.getUserName());
+		mail.setAddressee(addresseeTextField.getText());
 	}
 
 	private void fillMailForInternetServer() throws AddressException {
@@ -288,7 +295,7 @@ public class EditMailUI {
 	}
 
 	private void fillMailAddressees() throws AddressException {
-		String addressee = EditMailUI.this.receiverAddressTextField.getText();
+		String addressee = EditMailUI.this.addresseeTextField.getText();
 		InternetAddress[] addresseeArray = new InternetAddress[1];
 		addresseeArray[0] = new InternetAddress(addressee);
 		mail.setInternetAddressees(addresseeArray);
@@ -312,7 +319,7 @@ public class EditMailUI {
 	}
 
 	private void cleanForm() {
-		EditMailUI.this.receiverAddressTextField.setText("");
+		EditMailUI.this.addresseeTextField.setText("");
 		EditMailUI.this.subjectTextField.setText("");
 		EditMailUI.this.mainTextArea.setText("");
 		EditMailUI.this.extraItemNameLabel.setText("附件：");

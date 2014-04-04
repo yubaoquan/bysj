@@ -183,30 +183,10 @@ public class MailBean {
 		this.sentTime = sendTime;
 	}
 
-	/*public String getAttachment1Name() {
-		return attachment1Name;
+	public File getAttachment(int offset) {
+		return attachmentsForLocalServer[offset];
 	}
-
-	public void setAttachment1Name(String attachment1) {
-		this.attachment1Name = attachment1;
-	}
-
-	public String getAttachment2Name() {
-		return attachment2Name;
-	}
-
-	public void setAttachment2Name(String attachment2) {
-		this.attachment2Name = attachment2;
-	}
-
-	public String getAttachment3Name() {
-		return attachment3Name;
-	}
-
-	public void setAttachment3Name(String attachment3) {
-		this.attachment3Name = attachment3;
-	}*/
-
+	
 	public void showPropertiesForLocalServer() {
 		Util.println("id: " + this.getId());
 		Util.println("sender: " + this.getSender());

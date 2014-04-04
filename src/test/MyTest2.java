@@ -1,6 +1,8 @@
 package test;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.nio.channels.FileChannel;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -9,6 +11,7 @@ import java.util.List;
 import javax.swing.JFileChooser;
 
 import util.Util;
+import beans.MailBean;
 
 public class MyTest2 {
 
@@ -28,7 +31,7 @@ public class MyTest2 {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		test7();
+		testFileChannel();
 
 	}
 
@@ -112,6 +115,38 @@ public class MyTest2 {
 		Util.println(20 % 10);
 		for (int i = 0; i < 121; i ++) {
 			calculateTotalPages(i);
+		}
+	}
+	
+public static void testFileChannel() {
+		MailBean mail = new MailBean();
+		mail.setSender("sender");
+		mail.setAddressee("addressee");
+		mail.setSentTime(new Timestamp(System.currentTimeMillis()));
+		int offset = 0;
+		String time = "2014-04-04 14-52-59.357";
+		//String attachmentFolderName = "E:/boxMail/attachments/" + mail.getAddressee() + "/" + mail.getSendTime().toString().replace(" ", "_") + "/" + mail.getSender() + "/" + offset;
+		String attachmentFolderName = "E:/boxMail/attachments/" + mail.getAddressee() + "/" + time+ "/" + mail.getSender() + "/" + offset;
+		//String attachmentFolderName = "E:/boxMail/attachments/" + mail.getAddressee() + "/" + mail.getSendTime().toString().replace(" ", "_") + "/" + mail.getSender();
+	//	String attachmentFolderName = "E:/boxMail/attachments/" + mail.getAddressee() + "/" + mail.getSendTime().toString().replace(" ", "_");
+	//	String attachmentFolderName = "E:/boxMail/attachments/" + mail.getAddressee();
+		String attachmentName = "haha.txt";
+		File attachmentFolder = new File(attachmentFolderName);
+		
+		if (!attachmentFolder.exists()) {
+			attachmentFolder.mkdirs();
+		}
+		String path = attachmentFolderName +"/" + attachmentName;
+		File attachment = new File(path);
+		System.out.println(path);
+		try {
+			attachment.createNewFile();
+			FileChannel fc = new FileInputStream(attachment).getChannel();
+			fc.close();
+			System.out.println("FileChannel get!");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 }
