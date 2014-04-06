@@ -243,6 +243,10 @@ public class EditMailUI {
 	}
 
 	private boolean fillMail() {
+		if (EditMailUI.this.addresseeTextField.getText().trim().equals("")) {
+			JOptionPane.showMessageDialog(frame, (String) "收信人地址不能为空,请检查后重新输入.", "错误", JOptionPane.WARNING_MESSAGE);
+			return false;
+		}
 		try {
 			fillRespectiveProperties();
 		} catch (AddressException e) {
