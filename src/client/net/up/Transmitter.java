@@ -1,16 +1,18 @@
 package client.net.up;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
+import beans.Constant;
+import beans.MailBean;
+import beans.UserBean;
+import util.Util;
+
+import javax.mail.*;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
@@ -18,20 +20,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
-
-import javax.mail.AuthenticationFailedException;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.NoSuchProviderException;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
-
-import util.Util;
-import beans.Constant;
-import beans.MailBean;
-import beans.UserBean;
 
 /**
  * Class for sending mail to mail server
@@ -82,23 +70,23 @@ public class Transmitter {
 	}
 
 	public boolean loginToServer() {
-		boolean loginSucceed = false;
+		boolean loginSucceed;
 		if (user.isLocalServerEnabled()) {
 			loginSucceed = loginToLocalServer();
 		} else {
-			try {
-				this.transport.connect(user.getSmtpServerName(), user.getUserName(), user.getPassword());
-				loginSucceed = true;
-			} catch (AuthenticationFailedException e) {
-				System.out.println("认证失败!用户名或密码错误");
-				loginSucceed = false;
-				return loginSucceed;
-			} catch (MessagingException e) {
-				e.printStackTrace();
-				loginSucceed = false;
-				return loginSucceed;
-			}
-		}
+            try {
+                this.transport.connect(user.getSmtpServerName(), user.getUserName(), user.getPassword());
+                loginSucceed = true;
+            } catch (AuthenticationFailedException e) {
+                System.out.println("认证失败!用户名或密码错误");
+                loginSucceed = false;
+                return false;
+            } catch (MessagingException e) {
+                e.printStackTrace();
+                loginSucceed = false;
+                return false;
+            }
+        }
 		return loginSucceed;
 	}
 
@@ -133,12 +121,12 @@ public class Transmitter {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			return loginSucceed;
+			return false;
 		}
 		return loginSucceed;
 	}
 
-	private void initConnect() throws IOException, ClosedChannelException {
+	private void initConnect() throws IOException {
 		SocketAddress socketAddress = new InetSocketAddress(Constant.SERVER_HOSTNAME, Constant.SERVER_PORT);
 		socketChannel = SocketChannel.open();
 		socketChannel.configureBlocking(false);
@@ -149,7 +137,7 @@ public class Transmitter {
 		initSelector.select();
 	}
 
-	private void initReadAndWriteSelector() throws IOException, ClosedChannelException {
+	private void initReadAndWriteSelector() throws IOException {
 		selectorForRead = Selector.open();
 		selectorForWrite = Selector.open();
 
@@ -183,7 +171,7 @@ public class Transmitter {
 	}
 
 	private String receiveResponse() {
-		String responseString = null;
+		String responseString;
 		try {
 			while (selectorForRead.select() > 0) {
 				Set<SelectionKey> selectionKeys = selectorForRead.selectedKeys();
@@ -210,7 +198,7 @@ public class Transmitter {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return responseString;
+		return null;
 	}
 
 	public boolean sendMail(MailBean mail) {
@@ -255,11 +243,14 @@ public class Transmitter {
 	private void sendMailToLocalServer(MailBean mail) {
 		System.out.println("Send mail to local server");
 		StringBuffer request = new StringBuffer();
-		request.append(Constant.SEND_MAIL + " ");
-		request.append(mail.getSender() + " ");
-		request.append(mail.getAddressee() + " ");
-		request.append(mail.getSendTime().toString());
-		request.trimToSize();
+        request.append(Constant.SEND_MAIL);
+        request.append(" ");
+        request.append(mail.getSender());
+        request.append(" ");
+        request.append(mail.getAddressee());
+        request.append(" ");
+        request.append(mail.getSendTime().toString());
+        request.trimToSize();
 		sendRequest(request.toString());
 		receiveResponse();
 
@@ -287,9 +278,8 @@ public class Transmitter {
 			request.trimToSize();
 			sendRequest(request.toString());
 			receiveResponse();
-			return;
-		} else {
-			request.append("" + attachmentsAmount);
+        } else {
+			request.append(attachmentsAmount);
 			request.trimToSize();
 			sendRequest(request.toString());
 			receiveResponse();
@@ -307,7 +297,7 @@ public class Transmitter {
 		}
 	}
 
-	private void sendFile(File file) {
+	private void sendFile(File file) throws AssertionError {
 		PrintStream ps = null;
 		Socket socket = null;
 		OutputStream os = null;
@@ -317,7 +307,7 @@ public class Transmitter {
 			System.setOut(ps);
 
 			fis = new FileInputStream(file);
-			int readSize = 0;
+			int readSize;
 			long totalRead = 0;
 			System.out.println("File length: " + file.length());
 			socket = new Socket("127.0.0.1", 8866);
@@ -337,14 +327,22 @@ public class Transmitter {
 			e.printStackTrace();
 		} finally {
 			try {
-				os.close();
-				socket.close();
-				fis.close();
-			} catch (IOException e) {
+                if (os != null) {
+                    os.close();
+                }
+                if (socket != null) {
+                    socket.close();
+                }
+                if (fis != null) {
+                    fis.close();
+                }
+            } catch (IOException e) {
 				e.printStackTrace();
 			}
-			ps.close();
-		}
+            if (ps != null) {
+                ps.close();
+            }
+        }
 	}
 
 	public void closeConnection() {
@@ -373,7 +371,7 @@ public class Transmitter {
 
 	public static void main(String[] args) {
 		UserBean li = new UserBean();
-		boolean result = false;
+		boolean result;
 		li.setUserName("admin");
 		li.setPassword("admin");
 		result = new Transmitter(li).loginToLocalServer();
