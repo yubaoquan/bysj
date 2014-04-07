@@ -1,6 +1,9 @@
 package server;
 
-import java.io.IOException;
+import beans.Constant;
+import server.communicate.RequestThread;
+import util.Util;
+
 import java.net.BindException;
 import java.net.InetSocketAddress;
 import java.nio.channels.SelectionKey;
@@ -10,11 +13,6 @@ import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Logger;
-
-import server.DAO.DAO;
-import server.communicate.RequestThread;
-import util.Util;
-import beans.Constant;
 
 /**
  * The mail server running  on the local machine.
@@ -28,9 +26,6 @@ public class Server {
 	private static ServerSocketChannel serverSocketChannel = null;
 	private final static Logger logger = Logger.getLogger(Server.class.getName());
 
-	/**
-	 * @param args
-	 */
 	public static void main(String[] args) {
 		new Server().start();
 
@@ -50,8 +45,6 @@ public class Server {
 		} catch (BindException e) {
 			System.out.println("端口被占用!\n请关闭相关程序并重新运行");
 			System.exit(0);
-		} catch (IOException e) {
-			e.printStackTrace();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
