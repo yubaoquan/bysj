@@ -69,7 +69,6 @@ public class Server {
 			while (it.hasNext()) {
 				SelectionKey selectionKey = it.next();
 				it.remove();
-				// handleKey(selectionKey);
 				if (selectionKey.isAcceptable()) {
 					System.out.println("client connect");
 					serverSocketChannel = (ServerSocketChannel) selectionKey.channel();

@@ -28,7 +28,9 @@ public class RequestThread implements Runnable {
 	private SocketChannel socketChannel = null;
 	private ByteBuffer buffer = null;
 	private DAO dao = DAOFactory.getDAOInstance();
-
+	private ServerSocket serverSocket;
+	private Socket client;
+	private InputStream is;
 	private boolean userConnected = false;
 	private boolean threadAlive = true;
 
@@ -156,7 +158,6 @@ public class RequestThread implements Runnable {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
 	}
 
 	private void handleListMails() {
@@ -168,6 +169,7 @@ public class RequestThread implements Runnable {
 	}
 
 	private void handleSendMail(String mailStrng) {
+		MailBean mail = new MailBean();
 		if (userConnected) {
 			System.out.println("Send mail");
 			String[] params = mailStrng.split(" ");
@@ -178,11 +180,6 @@ public class RequestThread implements Runnable {
 			System.out.println("Sender: " + sender);
 			System.out.println("Addressee: " + addressee);
 			System.out.println("Sent time: " + sentTime);
-			MailBean mail = new MailBean();
-			mail.setSender(sender);
-			mail.setAddressee(addressee);
-			mail.setSentTime(sentTime);
-
 			sendResponse("OK");
 
 			String mailSubject = receiveRequest();
@@ -194,45 +191,55 @@ public class RequestThread implements Runnable {
 			sendResponse("OK");
 
 			System.out.println("Previous step execute OK.\n Now receiving attachment[s]...");
+			
+			fillMail(mail, sender, addressee, sentTime, mailSubject, mailContent);
 			receiveAttachments(mail);
+			dao.insertMailIntoMailbox(mail);
+			System.out.println("邮件插入数据库成功");
 		} else {
 			System.err.println("Not connected!");
 		}
 	}
 
-	private void receiveAttachments(MailBean mail) {
-		String countString = receiveRequest();
-		int attachmentsCount = Integer.parseInt(countString);
-		sendResponse("OK");
-
-		if (attachmentsCount == 0) {
-			System.out.println("0 attachments.");
-			return;
-		} else {
-			System.out.println(attachmentsCount + " attachments.");
-			for (int i = 0; i < attachmentsCount; i++) {
-				try {
-					String attachmentName = receiveRequest();
-					sendResponse("OK");
-					String fileLengthString = receiveRequest();
-					sendResponse("OK");
-					System.out.println("File lentgh: " + fileLengthString);
-					long fileLength = Long.parseLong(fileLengthString);
-
-					receiveFile(mail, i, attachmentName, fileLength);
-					sendResponse("OK");
-
-					// TODO
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		}
+	private void fillMail(MailBean mail, String sender, String addressee, Timestamp sentTime, String mailSubject, String mailContent) {
+		mail.setSender(sender);
+		mail.setAddressee(addressee);
+		mail.setSentTime(sentTime);
+		mail.setSubject(mailSubject);
+		mail.setContent(mailContent);
 	}
 
-	private void receiveFile(MailBean mail, int offset, String attachmentName, long fileLength) throws IOException, FileNotFoundException {
+	private void receiveAttachments(MailBean mail) {
+		startServerSocket();
+		System.out.println("connected");
+		StringBuffer attachentFileLocations = new StringBuffer("");
+		String attachmentsCountString = receiveRequest();
+		int attachmentsCount = Integer.parseInt(attachmentsCountString);
+		sendResponse("OK");
+		System.out.println(attachmentsCount + " attachments.");
+		for (int i = 0; i < attachmentsCount; i++) {
+			try {
+				String attachmentName = receiveRequest();
+				sendResponse("OK");
+				String fileLengthString = receiveRequest();
+				sendResponse("OK");
+				System.out.println("File lentgh: " + fileLengthString);
+				long fileLength = Long.parseLong(fileLengthString);
+				String attachmentLocation = receiveFile(mail, i, attachmentName, fileLength);
+				System.out.println("receiveFile() called once");
+				attachentFileLocations.append(attachmentLocation).append(",");
+				sendResponse("OK");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		mail.setAttachments(attachentFileLocations.toString());
+	}
+
+	private String receiveFile(MailBean mail, int offset, String attachmentName, long fileLength) throws IOException, FileNotFoundException {
 		File attachment = makeFile(mail, offset, attachmentName);
 		writeToFile(attachment, fileLength);
+		return attachment.getAbsolutePath();
 	}
 
 	private File makeFile(MailBean mail, int offset, String attachmentName) throws IOException {
@@ -251,25 +258,23 @@ public class RequestThread implements Runnable {
 	}
 
 	private void writeToFile(File attachment, long fileLength) throws IOException, FileNotFoundException {
-		PrintStream ps = null;
-		ServerSocket serverSocket = null;
+		//PrintStream ps = null;
 		FileOutputStream fos = null;
-		InputStream is = null;
 		try {
-			ps = new PrintStream(new FileOutputStream("E:/log.txt"));
-			System.setOut(ps);
-			
+			//ps = new PrintStream(new FileOutputStream("E:/log.txt"));
+			//System.setOut(ps);
+
 			System.out.println("File size: " + attachment.length());
-			serverSocket = new ServerSocket(8866);
-			Socket s = serverSocket.accept();
-			is = s.getInputStream();
+			getAStreamFromClient();
 			fos = new FileOutputStream(attachment);
 			byte[] buffer = new byte[1024];
 			int readSize = 0;
 			int totalRead = 0;
+			System.out.println("here1");
 			while ((readSize = is.read(buffer)) > 0) {
 				totalRead += readSize;
-				System.out.println("Total read: " + totalRead);
+				System.out.println(readSize);
+				//System.out.println("Total read: " + totalRead);
 				fos.write(buffer, 0, readSize);
 				buffer = new byte[1024];
 			}
@@ -279,15 +284,33 @@ public class RequestThread implements Runnable {
 			ex.printStackTrace();
 		} finally {
 			is.close();
-			serverSocket.close();
 			fos.close();
-			ps.close();
+			//ps.close();
 		}
 	}
 
+	private void startServerSocket() {
+		try {
+			serverSocket = new ServerSocket(8866);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void getAStreamFromClient() {
+		try {
+			client = serverSocket.accept();
+			is = client.getInputStream();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
 	private void handleExit() throws IOException {
-		threadAlive = false;
 		socketChannel.close();
+		serverSocket.close();
+		threadAlive = false;
 	}
 
 	private boolean userLoginPermitted(String username, String password) {

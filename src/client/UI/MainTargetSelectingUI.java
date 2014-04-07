@@ -14,7 +14,7 @@ public class MainTargetSelectingUI {
 
 	public MainTargetSelectingUI(UserBean li) {
 		super();
-		this.user = li;
+		user = li;
 	}
 
 	public static enum Selection {SEND,RECEIVE}
@@ -28,27 +28,27 @@ public class MainTargetSelectingUI {
 	private UserBean user;
 	
 	public void initUI() {
-		this.setAttributes();
-		this.addComponents();
+		setAttributes();
+		addComponents();
 	}
 	
 	public void setAttributes() {
-		this.frame.setLocation(500, 200);
-		this.frame.setSize(250, 150);
-		this.frame.setResizable(false);
-		this.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		this.panel.setLayout(this.layout);
-		this.box.addItem(Selection.SEND);
-		this.box.addItem(Selection.RECEIVE);
-		this.frame.setVisible(true);
+		frame.setLocation(500, 200);
+		frame.setSize(250, 150);
+		frame.setResizable(false);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		panel.setLayout(layout);
+		box.addItem(Selection.SEND);
+		box.addItem(Selection.RECEIVE);
+		frame.setVisible(true);
 	}
 	
 	public void addComponents() {
-		this.confirmBotton.addActionListener(this.mainTargetSelectingUIMonitor);
-		this.panel.add(this.label);
-		this.panel.add(this.box);
-		this.panel.add(this.confirmBotton);
-		this.frame.add(this.panel);
+		confirmBotton.addActionListener(mainTargetSelectingUIMonitor);
+		panel.add(label);
+		panel.add(box);
+		panel.add(confirmBotton);
+		frame.add(panel);
 	}
 	public static void main(String[] args) {
 		UserBean testLi = new UserBean();

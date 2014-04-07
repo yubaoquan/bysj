@@ -32,19 +32,16 @@ public class DAO {
 	}
 
 	public void insertMailIntoMailbox(MailBean mail) {
-		String sql = "insert into mail (sender, addressee, subject, content, sendtime, attachment_1, attachment_2, attachment_3) values (?, ?, ?, ?, ?, ?, ?, ?)";
+		String sql = "insert into mail (sender, addressee, sendtime, subject, content, attachments) "
+				+ "values (?, ?, ?, ?, ?, ?)";
 		try (PreparedStatement stmt = conn.prepareStatement(sql);){
 			stmt.setString(1, mail.getSender());
 			stmt.setString(2, mail.getAddressee());
-			stmt.setString(3, mail.getSubject());
-			stmt.setString(4, mail.getContent());
-			stmt.setTimestamp(5, new Timestamp(System.currentTimeMillis()));
-			//TODO
-			/*stmt.setString(6, mail.getAttachment1Name());
-			stmt.setString(7, mail.getAttachment2Name());
-			stmt.setString(8, mail.getAttachment3Name());*/
+			stmt.setTimestamp(3, mail.getSendTime());
+			stmt.setString(4, mail.getSubject());
+			stmt.setString(5, mail.getContent());
+			stmt.setString(6, mail.getAttachments());
 			stmt.executeUpdate();
-			//conn.commit();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -10,6 +10,7 @@ import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeUtility;
+
 import java.io.File;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -220,26 +221,35 @@ public class ReceiveMail {
      */
     public void loginAndReceiveMail(UserBean user) throws Exception {
         if (user.isLocalServerEnabled()) {
-            out.println("local receive mail");//TODO
+            receiveLocalMail();
         } else {
-            String smtpServerAddress = user.getSmtpServerName();
-            String pop3ServerAddress = user.getPop3ServerName();
-            String userName = user.getUserName();
-            String password = user.getPassword();
-
-            Store store = initStore(smtpServerAddress, pop3ServerAddress, userName, password);
-            store.connect();
-
-            Folder folder = store.getFolder("INBOX");
-            folder.open(Folder.READ_ONLY);
-            Message[] messages = folder.getMessages();
-            out.println("Messages' length: " + messages.length);
-            List<MailBean> mails = receiveAndSaveAsMailBeans(messages);
-            new MailListUI(mails);
+            receiveInternetMail(user);
         }
 
 
     }
+
+	private void receiveLocalMail() {
+		out.println("local receive mail");
+		//TODO
+	}
+
+	private void receiveInternetMail(UserBean user) throws NoSuchProviderException, MessagingException, Exception {
+		String smtpServerAddress = user.getSmtpServerName();
+		String pop3ServerAddress = user.getPop3ServerName();
+		String userName = user.getUserName();
+		String password = user.getPassword();
+
+		Store store = initStore(smtpServerAddress, pop3ServerAddress, userName, password);
+		store.connect();
+
+		Folder folder = store.getFolder("INBOX");
+		folder.open(Folder.READ_ONLY);
+		Message[] messages = folder.getMessages();
+		out.println("Messages' length: " + messages.length);
+		List<MailBean> mails = receiveAndSaveAsMailBeans(messages);
+		new MailListUI(mails);
+	}
 
     private List<MailBean> receiveAndSaveAsMailBeans(Message[] message) throws Exception {
         ReceiveMail pmm = null;

@@ -34,9 +34,7 @@ public class MailBean {
 	private String addressee;
 	private Timestamp sentTime;
 	private File[] attachmentsForLocalServer = new File[ATTACHMENTS_CAPACITY];
-	/*private String attachment1Name = "";
-	private String attachment2Name = "";
-	private String attachment3Name = "";*/
+	private String attachments;
 	private int id;
 
 	public int getId() {
@@ -198,5 +196,13 @@ public class MailBean {
 		Util.println("attachment 2 : " + this.getAttachment2Name());
 		Util.println("attachment 3 : " + this.getAttachment3Name());*/
 
+	}
+
+	public String getAttachments() {
+		return attachments;
+	}
+
+	public void setAttachments(String attachments) {
+		this.attachments = attachments;
 	}
 }

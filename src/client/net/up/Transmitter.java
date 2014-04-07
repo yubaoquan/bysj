@@ -8,10 +8,12 @@ import util.Util;
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -43,6 +45,8 @@ public class Transmitter {
 	private Selector selectorForWrite = null;
 	private SocketChannel socketChannel = null;
 	private ByteBuffer buffer = null;
+	private Socket socket = null;
+	private OutputStream os = null;
 
 	public static Transmitter getInstance(UserBean user) {
 		if (Transmitter.transmitter == null) {
@@ -270,6 +274,7 @@ public class Transmitter {
 	}
 
 	private void sendAttachment(MailBean mail) {
+		System.out.println("client connected");
 		StringBuffer request;
 		request = new StringBuffer();
 		int attachmentsAmount = mail.getAttachmentsAmount();
@@ -292,57 +297,73 @@ public class Transmitter {
 				sendRequest("" + attachment.length());
 				receiveResponse();
 				sendFile(attachment);
+				System.out.println("sent a file");
 				receiveResponse();
 			}
+			closeResources();
 		}
 	}
 
 	private void sendFile(File file) throws AssertionError {
 		PrintStream ps = null;
-		Socket socket = null;
-		OutputStream os = null;
+		
 		FileInputStream fis = null;
 		try {
-			ps = new PrintStream(new FileOutputStream("E:/TransmitterLog.txt"));
-			System.setOut(ps);
+			//ps = new PrintStream(new FileOutputStream("E:/TransmitterLog.txt"));
+			//System.setOut(ps);
 
 			fis = new FileInputStream(file);
 			int readSize;
 			long totalRead = 0;
 			System.out.println("File length: " + file.length());
-			socket = new Socket("127.0.0.1", 8866);
-			os = socket.getOutputStream();
+				connectToFileServer();
 			byte[] buffer = new byte[1024];
 			while ((readSize = fis.read(buffer)) > 0) {
 				totalRead += readSize;
-				System.out.println("total read " + totalRead);
+				//System.out.println("total read " + totalRead);
 				os.write(buffer, 0, readSize);
 				buffer = new byte[1024];
 			}
-			os.close();
-			socket.close();
-			fis.close();
 			System.out.println("Send file finish.");
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
 			try {
-                if (os != null) {
-                    os.close();
-                }
-                if (socket != null) {
-                    socket.close();
-                }
+                os.close();
                 if (fis != null) {
                     fis.close();
                 }
             } catch (IOException e) {
 				e.printStackTrace();
 			}
-            if (ps != null) {
+           /* if (ps != null) {
                 ps.close();
-            }
+            }*/
         }
+	}
+
+	private void closeResources() {
+		try {
+			if (os != null) {
+			    os.close();
+			}
+			if (socket != null) {
+			    socket.close();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+	}
+
+	private void connectToFileServer() {
+			try {
+				socket = new Socket("127.0.0.1", 8866);
+				os = socket.getOutputStream();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			
 	}
 
 	public void closeConnection() {
