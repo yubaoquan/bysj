@@ -51,10 +51,15 @@ public class MailListUI extends JFrame {
 	public MailListUI(List<MailBean> mails) {
 		this();
 		this.mails = mails;
-		for (MailBean mail : mails) {
-			MailURLLabel mailURL = new MailURLLabel(mail, this);
-			Util.println("add " + mailURL.getMailSubject());
-			mailURLLabels.add(mailURL);
+		/*for (MailBean mail : mails) {
+			MailURLLabel mailURLLabel = new MailURLLabel(mail, this);
+			Util.println("add " + mailURLLabel.getMailSubject());
+			mailURLLabels.add(mailURLLabel);
+		}*/
+		for (int i = mails.size(); i > 0; i --) {
+			MailURLLabel mailURLLabel = new MailURLLabel(mails.get(i - 1), this);
+			Util.println("add " + mailURLLabel.getMailSubject());
+			mailURLLabels.add(mailURLLabel);
 		}
 		this.setMailURLLabels(mailURLLabels);
 		launch();

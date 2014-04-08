@@ -188,7 +188,7 @@ public class MailDetailViewUI extends JFrame {
 		mail.setAddressee("收信人");
 		mail.setSubject("标题");
 		mail.setText("正文");
-		mail.setAttachments("attachments");
+		mail.setAttachmentNames("attachments");
 		mail.setAttachmentAmount(1);
 		
 		MailURLLabel mailLabel = new MailURLLabel(mail);
@@ -230,6 +230,7 @@ public class MailDetailViewUI extends JFrame {
 		}
 
 		private void onDownloadAttachmentButtonPressed() {
+			//	TODO
 			System.out.println("download attachment");
 		}
 

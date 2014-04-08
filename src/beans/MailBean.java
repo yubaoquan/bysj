@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
@@ -33,6 +34,15 @@ public class MailBean implements Serializable{
 	private String subject;
 	private String text;
 	private InternetAddress[] internetAddressees = new InternetAddress[10];
+	private ArrayList<AttachmentBean> attachmentBeans;
+
+	public ArrayList<AttachmentBean> getAttachmentBeans() {
+		return attachmentBeans;
+	}
+
+	public void setAttachmentBeans(ArrayList<AttachmentBean> attachmentBeans) {
+		this.attachmentBeans = attachmentBeans;
+	}
 
 	// the fields below are used for this system's own mail server
 	private String sender;
@@ -211,7 +221,7 @@ public class MailBean implements Serializable{
 		return attachments;
 	}
 
-	public void setAttachments(String attachments) {
+	public void setAttachmentNames(String attachments) {
 		this.attachments = attachments;
 	}
 }

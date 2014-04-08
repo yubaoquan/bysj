@@ -178,7 +178,7 @@ public class LoginUI {
 		userNameTextField.setText("");
 		passwordTextField.setText("");
 	}
-
+	
 	public String getSmtpServerNameFromSelector() {
 		String selection = (String) serverNameSelector.getSelectedItem();
 		if (selection.equals("")) {

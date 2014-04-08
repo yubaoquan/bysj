@@ -34,7 +34,7 @@ public class MyTest2 {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		testFileDialog();
+		testListAddOrder();
 
 	}
 
@@ -170,5 +170,15 @@ public static void testFileChannel() {
 		File firstFile = files[0];
 		out.println(firstFile);
 		System.exit(0);
+	}
+	
+	private static void testListAddOrder() {
+		ArrayList<String> strings = new ArrayList<>();
+		strings.add("one");
+		strings.add("two");
+		strings.add("three");
+		for (int i = 0; i < strings.size(); i ++) {
+			out.println(strings.get(i));
+		}
 	}
 }

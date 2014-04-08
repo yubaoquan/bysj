@@ -35,7 +35,7 @@ public class Util {
 		
 		mail.setSubject(localMail.getSubject());
 		mail.setContent(localMail.getContent());
-		mail.setAttachments(localMail.getAttachments());
+		mail.setAttachmentNames(localMail.getAttachments());
 		return mail;
 	}
 	
@@ -46,5 +46,13 @@ public class Util {
 			mails.add(mb);
 		}
 		return mails;
+	}
+	
+	public static String replaceIllegalCharacters(String subjectName) {
+		char[] illegalCharacters = { ':', '/', '\\', '?', '*', '<', '>', '|', '\"',' ',',' };
+		for (char ch : illegalCharacters) {
+			subjectName = subjectName.replace(ch, '_');
+		}
+		return subjectName;
 	}
 }

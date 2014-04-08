@@ -20,13 +20,13 @@ public class LoginThread extends Thread{
 	public static void main(String[] args) {
 		LoginUI loginUI = new LoginUI();
 		UserBean li = new UserBean();
-		li.setUserName("admin");
-		li.setPassword("admin");
+		li.setUserName("18080922587@163.com");
+		li.setPassword("wocao123");
 		li.setSmtpServerName("smtp.163.com");
-		loginUI.userNameTextField.setText("admin");
-		loginUI.passwordTextField.setText("admin");
+		loginUI.userNameTextField.setText("18080922587@163.com");
+		loginUI.passwordTextField.setText("wocao123");
 		loginUI.configureOthercomponents();
-		loginUI.serverNameSelector.setSelectedIndex(3);
+		loginUI.serverNameSelector.setSelectedIndex(1);
 		//loginUI.monitor.onConfirmButtonClick();
 		
 		

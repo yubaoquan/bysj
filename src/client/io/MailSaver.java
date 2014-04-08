@@ -10,6 +10,7 @@ import javax.mail.Multipart;
 import javax.mail.Part;
 import javax.mail.internet.MimeUtility;
 
+import util.Util;
 import client.net.down.ReceiveMail;
 
 
@@ -17,7 +18,7 @@ public class MailSaver {
 
 	private FileStreamSaver fileStreamSaver;
 	private FileWriterSaver fileWriterSaver;
-	private String attachmentPath = ""; // 附件下载后的存放目录
+	private String attachmentFolder = ""; // 附件下载后的存放目录
 	
 	/**
 	 * 【真正的保存附件到指定目录里】
@@ -48,16 +49,16 @@ public class MailSaver {
 	
 	public void saveMail(Message[] message, ReceiveMail receiveMailBean, int i) throws MessagingException, Exception {
 		String subjectName = getSuitableLengthSubjectName(receiveMailBean);
-		String singleMailFolderPath = getSingleMailFolderPath(receiveMailBean);
+		String singleMailFolderPath = getSingleMailFolderLocation(receiveMailBean);
 		makeFolderForMail(singleMailFolderPath);
 		String filePath = singleMailFolderPath + File.separator + subjectName + ".txt";
-		setAttachPath(singleMailFolderPath);
+		setAttachFolder(singleMailFolderPath);
 		System.out.println("set attachpath:" + singleMailFolderPath); 
 		System.out.println(filePath);
 		saveMailByWriter(message, receiveMailBean, i, filePath);
 	}
 	
-	private String getSingleMailFolderPath(ReceiveMail receiveMailBean) throws Exception {
+	private String getSingleMailFolderLocation(ReceiveMail receiveMailBean) throws Exception {
 		String subjectName = getSuitableLengthSubjectName(receiveMailBean);
 		String singleMailFolderPath = ReceiveMail.getFilePathPrefix() + subjectName;
 		return singleMailFolderPath;
@@ -66,27 +67,21 @@ public class MailSaver {
 	private static String getSuitableLengthSubjectName(ReceiveMail receiveMailBean) throws MessagingException {
 		String subjectName = receiveMailBean.getSubject();
 		int subjectNameLength = 20;
-		subjectName = replaceIllegalCharacters(subjectName);
+		subjectName = Util.replaceIllegalCharacters(subjectName);
 		subjectName = subjectName.length() < subjectNameLength ? subjectName : subjectName.substring(0, subjectNameLength);
 		return subjectName;
 	}
 	
-	private static String replaceIllegalCharacters(String subjectName) {
-		char[] illegalCharacters = { ':', '/', '\\', '?', '*', '<', '>', '|', '\"',' ' };
-		for (char ch : illegalCharacters) {
-			subjectName = subjectName.replace(ch, '_');
-		}
-		return subjectName;
-	}
+	
 	
 	private void makeFolderForMail(String folderPath) {
 		File folder = new File(folderPath);
 		folder.mkdirs();
 	}
 	
-	public void saveMailByWriter(Message[] message, ReceiveMail receiveMailBean, int i, String filePath) throws Exception, MessagingException {
+	public void saveMailByWriter(Message[] messages, ReceiveMail receiveMailBean, int i, String filePath) throws Exception, MessagingException {
 		fileWriterSaver = new FileWriterSaver(filePath);
-		fileWriterSaver.saveMailContents(message, receiveMailBean, i);
+		fileWriterSaver.saveMailToFile(messages, receiveMailBean, i);
 		fileWriterSaver.closeWriter();
 	}
 	
@@ -99,25 +94,25 @@ public class MailSaver {
 		if (part.isMimeType("multipart/*")) {
 			Multipart mp = (Multipart) part.getContent();
 			for (int i = 0; i < mp.getCount(); i++) {
-				BodyPart mpart = mp.getBodyPart(i);
-				String disposition = mpart.getDisposition();
+				BodyPart bodyPart = mp.getBodyPart(i);
+				String disposition = bodyPart.getDisposition();
 				if ((disposition != null) && ((disposition.equals(Part.ATTACHMENT)) || (disposition.equals(Part.INLINE)))) {
-					fileName = mpart.getFileName();
+					fileName = bodyPart.getFileName();
 					if (fileName.toLowerCase().indexOf("gb2312") != -1 || fileName.toLowerCase().indexOf("gb18030") != -1|| fileName.toLowerCase().indexOf("gbk") != -1) {
 						fileName = MimeUtility.decodeText(fileName);
 					}
 					fileName = "附件" + fileName;
-					fileName = replaceIllegalCharacters(fileName);
-					saveFile(fileName, mpart.getInputStream(),getAttachPath());
-				} else if (mpart.isMimeType("multipart/*")) {
-					saveAttachment(mpart);
+					fileName = Util.replaceIllegalCharacters(fileName);
+					saveFile(fileName, bodyPart.getInputStream(),getAttachPath());
+				} else if (bodyPart.isMimeType("multipart/*")) {
+					saveAttachment(bodyPart);
 				} else {
-					fileName = mpart.getFileName();
-					if ((fileName != null) && (fileName.toLowerCase().indexOf("GB2312") != -1)) {
+					fileName = bodyPart.getFileName();
+					if ((fileName != null) && (fileName.toLowerCase().indexOf("gb2312") != -1)) {
 						fileName = MimeUtility.decodeText(fileName);
 						fileName = "附件" + fileName;
-						fileName = replaceIllegalCharacters(fileName);
-						saveFile(fileName, mpart.getInputStream(),getAttachPath());
+						fileName = Util.replaceIllegalCharacters(fileName);
+						saveFile(fileName, bodyPart.getInputStream(),getAttachPath());
 					}
 				}
 			}
@@ -129,14 +124,14 @@ public class MailSaver {
 	/**
 	 * 【设置附件存放路径】
 	 */
-	public void setAttachPath(String attachpath) {
-		this.attachmentPath = attachpath;
+	public void setAttachFolder(String attachpath) {
+		this.attachmentFolder = attachpath;
 	}
 	
 	/**
 	 * 【获得附件存放路径】
 	 */
 	public String getAttachPath() {
-		return attachmentPath;
+		return attachmentFolder;
 	}
 }

@@ -261,7 +261,7 @@ public class RequestThread implements Runnable {
 				e.printStackTrace();
 			}
 		}
-		mail.setAttachments(attachentFileLocations.toString());
+		mail.setAttachmentNames(attachentFileLocations.toString());
 	}
 
 	private String receiveFile(MailBean mail, int offset, String attachmentName, long fileLength) throws IOException, FileNotFoundException {

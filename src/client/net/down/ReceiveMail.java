@@ -15,6 +15,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
+import javax.mail.BodyPart;
 import javax.mail.Flags;
 import javax.mail.Folder;
 import javax.mail.Message;
@@ -30,6 +31,7 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeUtility;
 
 import util.Util;
+import beans.AttachmentBean;
 import beans.Constant;
 import beans.LocalMailBean;
 import beans.MailBean;
@@ -48,7 +50,6 @@ public class ReceiveMail {
     private Transmitter transmitter;
     private ObjectInputStream ois;
     private Socket socket;
-    //TODO private 
     
     public ReceiveMail(MimeMessage mimeMessage) {
         this.mimeMessage = mimeMessage;
@@ -291,30 +292,72 @@ public class ReceiveMail {
 		new MailListUI(mails);
 	}
 
-    private List<MailBean> receiveAndSaveAsMailBeans(Message[] message) throws Exception {
+    private List<MailBean> receiveAndSaveAsMailBeans(Message[] messages) throws Exception {
         ReceiveMail pmm = null;
         List<MailBean> mails = new ArrayList<>();
-        for (Message aMessage : message) {
+        int mailID = 0;
+        for (Message message : messages) {
             //如果这个message被擦除了，则跳过
-            if (!aMessage.isExpunged()) {
-                pmm = new ReceiveMail((MimeMessage) aMessage);
+            if (!message.isExpunged()) {
+                pmm = new ReceiveMail((MimeMessage) message);
                 MailBean mail = new MailBean();
+                mail.setId(mailID);
+                mailID ++;
                 fillMailBean(pmm, mail);
                 mails.add(mail);
             }
         }
         return mails;
     }
-
+    
     private void fillMailBean(ReceiveMail pmm, MailBean mail) throws Exception {
-        mail.setId(-1);
         mail.setSender(pmm.getFrom());
         mail.setAddressee(pmm.getMailAddress("to"));
         mail.setSubject(pmm.getSubject());
         mail.setText(pmm.getBodyText());
         mail.setSendTime(Timestamp.valueOf(pmm.getSentDate()));
+        ArrayList<AttachmentBean> attachments = collectAttachmentBeans(pmm.mimeMessage);
+        mail.setAttachmentBeans(attachments);
+        mail.setAttachmentAmount(attachments.size());
+        StringBuffer attachmentNames = new StringBuffer();
+        for (AttachmentBean ab : attachments) {
+        	attachmentNames.append(ab.getTitle());
+        }
+        String attachmentNameString = Util.getShortStringWithEllipsis(attachmentNames.toString(), 20);
+        mail.setAttachmentNames(attachmentNameString);
     }
 
+    public ArrayList<AttachmentBean> collectAttachmentBeans(Part part) throws Exception {
+    //TODO 
+    	ArrayList<AttachmentBean> attachments = new ArrayList<>();
+		String attachmentName = "";
+		if (part.isMimeType("multipart/*")) {
+			Multipart mp = (Multipart) part.getContent();
+			for (int i = 0; i < mp.getCount(); i++) {
+				BodyPart bodyPart = mp.getBodyPart(i);
+				String disposition = bodyPart.getDisposition();
+				if ((disposition != null) && ((disposition.equals(Part.ATTACHMENT)) || (disposition.equals(Part.INLINE)))) {
+					attachmentName = bodyPart.getFileName();
+					if (attachmentName.toLowerCase().indexOf("gb2312") != -1 || attachmentName.toLowerCase().indexOf("gb18030") != -1|| attachmentName.toLowerCase().indexOf("gbk") != -1) {
+						attachmentName = MimeUtility.decodeText(attachmentName);
+					}
+					attachments.add(new AttachmentBean(i, attachmentName, bodyPart));
+				} else if (bodyPart.isMimeType("multipart/*")) {
+					collectAttachmentBeans(bodyPart);
+				} else {
+					attachmentName = bodyPart.getFileName();
+					if ((attachmentName != null) && (attachmentName.toLowerCase().indexOf("gb2312") != -1)) {
+						attachmentName = MimeUtility.decodeText(attachmentName);
+						attachments.add(new AttachmentBean(i, attachmentName, bodyPart));
+					}
+				}
+			}
+		} else if (part.isMimeType("message/rfc822")) {
+			collectAttachmentBeans((Part) part.getContent());
+		}
+		return attachments;
+	}
+    
     private static Store initStore(String smtpServerAddress, String pop3ServerAddress, String userName, String password) throws NoSuchProviderException {
         int pop3ServerPort = 110;
         int smtpServerPort = 25;

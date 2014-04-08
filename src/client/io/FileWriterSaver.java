@@ -26,7 +26,7 @@ public class FileWriterSaver {
 			bufferedWriter = new BufferedWriter(fileWriter);
 	}
 	
-	public void saveMailContents(Message[] message, ReceiveMail receiveMailBean, int i) throws MessagingException, Exception {
+	public void saveMailToFile(Message[] message, ReceiveMail receiveMailBean, int i) throws MessagingException, Exception {
 		writeLine("subject: " + receiveMailBean.getSubject() + "\n");
 		System.out.println(receiveMailBean.getSubject());
 		writeLine("sentdate: " + receiveMailBean.getSentDate() + "\n");
