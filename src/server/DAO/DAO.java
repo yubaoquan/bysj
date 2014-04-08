@@ -6,10 +6,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Timestamp;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
+import beans.LocalMailBean;
 import beans.MailBean;
 
 public class DAO {
@@ -60,16 +60,20 @@ public class DAO {
 		
 	}
 
-	public Map<Integer, String> listMails(String addressee) {
-		Map<Integer, String> mails = new HashMap<>();
-		String sql = "select id, subject from mail where addressee = ?";
+	public List<LocalMailBean> listMails(String addressee) {
+		List<LocalMailBean> mails = new ArrayList<>();
+		String sql = "select * from mail where addressee = ?";
 		try (PreparedStatement stmt = conn.prepareStatement(sql);){
 			stmt.setString(1, addressee);
 			rs = stmt.executeQuery();
 			while (rs.next()) {
-				int id = rs.getInt("id");
-				String subject = rs.getString("subject");
-				mails.put(id, subject);
+				LocalMailBean mail = new LocalMailBean();
+				mail.setSender(rs.getString("sender"));
+				mail.setSendTime(rs.getTimestamp("sendtime"));
+				mail.setSubject(rs.getString("subject"));
+				mail.setContent(rs.getString("content"));
+				mail.setAttachments(rs.getString("attachments"));
+				mails.add(mail);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -102,7 +106,7 @@ public class DAO {
 				result.setAddressee(rs.getString("addressee"));
 				result.setSubject(rs.getString("subject"));
 				result.setText(rs.getString("content"));
-				result.setSentTime(rs.getTimestamp("sendtime"));
+				result.setSendTime(rs.getTimestamp("sendtime"));
 				//TODO
 				/*result.setAttachment1Name(rs.getString("attachment_1"));
 				result.setAttachment2Name(rs.getString("attachment_3"));

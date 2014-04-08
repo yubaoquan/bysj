@@ -1,17 +1,13 @@
 package client.net.down;
 
 
-import beans.MailBean;
-import beans.UserBean;
-import client.UI.MailListUI;
-import client.io.MailSaver;
-
-import javax.mail.*;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeUtility;
+import static java.lang.System.getProperties;
+import static java.lang.System.out;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.net.Socket;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -19,7 +15,28 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
-import static java.lang.System.*;
+import javax.mail.Flags;
+import javax.mail.Folder;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Multipart;
+import javax.mail.NoSuchProviderException;
+import javax.mail.Part;
+import javax.mail.Session;
+import javax.mail.Store;
+import javax.mail.URLName;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeUtility;
+
+import util.Util;
+import beans.Constant;
+import beans.LocalMailBean;
+import beans.MailBean;
+import beans.UserBean;
+import client.UI.MailListUI;
+import client.io.MailSaver;
+import client.net.up.Transmitter;
 
 public class ReceiveMail {
     private MimeMessage mimeMessage = null;
@@ -28,7 +45,11 @@ public class ReceiveMail {
     private String dateFormat = "yyyy-MM-dd hh:mm:ss"; // 默认的日前显示格式
     private static String filePathPrefix;
     private MailSaver mailSaver = new MailSaver();
-
+    private Transmitter transmitter;
+    private ObjectInputStream ois;
+    private Socket socket;
+    //TODO private 
+    
     public ReceiveMail(MimeMessage mimeMessage) {
         this.mimeMessage = mimeMessage;
         try {
@@ -221,7 +242,7 @@ public class ReceiveMail {
      */
     public void loginAndReceiveMail(UserBean user) throws Exception {
         if (user.isLocalServerEnabled()) {
-            receiveLocalMail();
+            receiveLocalMail(user);
         } else {
             receiveInternetMail(user);
         }
@@ -229,7 +250,26 @@ public class ReceiveMail {
 
     }
 
-	private void receiveLocalMail() {
+	private void receiveLocalMail(UserBean user) {
+		transmitter = Transmitter.getInstance(user);
+		transmitter.sendRequest(Constant.LIST_MAILS + " ");
+		try {
+			socket = new Socket("127.0.0.1", 8866);
+			ois = new ObjectInputStream(socket.getInputStream());
+			ArrayList<LocalMailBean> localMails = (ArrayList<LocalMailBean>)ois.readObject();
+			ArrayList<MailBean> mails = (ArrayList<MailBean>) Util.convertLocalMaisToMails(localMails);
+			
+			new MailListUI(mails).launch();
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				ois.close();
+				socket.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 		out.println("local receive mail");
 		//TODO
 	}
@@ -272,7 +312,7 @@ public class ReceiveMail {
         mail.setAddressee(pmm.getMailAddress("to"));
         mail.setSubject(pmm.getSubject());
         mail.setText(pmm.getBodyText());
-        mail.setSentTime(Timestamp.valueOf(pmm.getSentDate()));
+        mail.setSendTime(Timestamp.valueOf(pmm.getSentDate()));
     }
 
     private static Store initStore(String smtpServerAddress, String pop3ServerAddress, String userName, String password) throws NoSuchProviderException {

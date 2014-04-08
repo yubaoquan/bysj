@@ -2,6 +2,7 @@ package client.UI;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.FileDialog;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -12,7 +13,6 @@ import java.sql.Timestamp;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.swing.JButton;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -196,10 +196,13 @@ public class EditMailUI {
 		}
 
 		private void onAddAttachmentButtonClick() {
-			JFileChooser fc = new JFileChooser();// fc.set
-			fc.setDialogTitle("选择附件");
-			fc.showDialog(frame, "选择");
-			File attachment = fc.getSelectedFile();
+			File attachment = null;
+			FileDialog fd = new FileDialog(frame, "选择附件");
+			fd.setVisible(true);
+			File[] files = fd.getFiles();
+			if (files.length > 0) {
+				attachment = files[0];
+			}
 			if (attachment != null) {
 				System.out.println(attachment.getName());
 				changeAttachmentLabel(attachment.getName());
@@ -279,7 +282,7 @@ public class EditMailUI {
 		Timestamp sentTime = new Timestamp(System.currentTimeMillis());
 		mail.setSubject(subject);
 		mail.setText(text);
-		mail.setSentTime(sentTime);
+		mail.setSendTime(sentTime);
 	}
 
 	private void fillMailForLocalServer() {
@@ -293,7 +296,7 @@ public class EditMailUI {
 		// TODO Auto-generated method stub
 		System.out.println("Fill mail for Internet server");
 		fillMailAddressees();
-		if (mail.getAttachmentsAmount() > 0) {
+		if (mail.getAttachmentAmount() > 0) {
 			mail.addAttachmentsToMultipart();
 		}
 	}
@@ -310,7 +313,7 @@ public class EditMailUI {
 		int shortNameLength = attachmentName.length() > 10 ? 10 : attachmentName.length();
 		String shortFileName = attachmentName.substring(0, shortNameLength) + ".., ";
 
-		if (mail.getAttachmentsAmount() == mail.ATTACHMENTS_CAPACITY - 1) {
+		if (mail.getAttachmentAmount() == mail.ATTACHMENTS_CAPACITY - 1) {
 			shortFileName = shortFileName.substring(0, shortFileName.length() - 1);
 		}
 		text.append(shortFileName);

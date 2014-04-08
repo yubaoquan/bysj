@@ -12,7 +12,7 @@ import client.UI.MainTargetSelectingUI;
 //import org.junit.Ignore;
 
 @RunWith(JUnit4.class)
-public class MyTest {
+public class UnitTest {
 
 	@Test
 	public void test1() {

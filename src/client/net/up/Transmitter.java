@@ -78,19 +78,25 @@ public class Transmitter {
 		if (user.isLocalServerEnabled()) {
 			loginSucceed = loginToLocalServer();
 		} else {
-            try {
-                this.transport.connect(user.getSmtpServerName(), user.getUserName(), user.getPassword());
-                loginSucceed = true;
-            } catch (AuthenticationFailedException e) {
-                System.out.println("认证失败!用户名或密码错误");
-                loginSucceed = false;
-                return false;
-            } catch (MessagingException e) {
-                e.printStackTrace();
-                loginSucceed = false;
-                return false;
-            }
+            loginSucceed = loginToInternetServer();
         }
+		return loginSucceed;
+	}
+
+	private boolean loginToInternetServer() {
+		boolean loginSucceed;
+		try {
+		    this.transport.connect(user.getSmtpServerName(), user.getUserName(), user.getPassword());
+		    loginSucceed = true;
+		} catch (AuthenticationFailedException e) {
+		    System.out.println("认证失败!用户名或密码错误");
+		    loginSucceed = false;
+		    return false;
+		} catch (MessagingException e) {
+		    e.printStackTrace();
+		    loginSucceed = false;
+		    return false;
+		}
 		return loginSucceed;
 	}
 
@@ -149,7 +155,7 @@ public class Transmitter {
 		socketChannel.register(selectorForWrite, SelectionKey.OP_WRITE);
 	}
 
-	private void sendRequest(String requestString) {
+	public void sendRequest(String requestString) {
 		Util.println("send request: " + requestString);
 		try {
 			while (selectorForWrite.select() > 0) {
@@ -161,7 +167,7 @@ public class Transmitter {
 					if (selectionKey.isWritable()) {
 						SocketChannel channel = (SocketChannel) selectionKey.channel();
 						buffer = ByteBuffer.wrap(requestString.getBytes("UTF-8"));
-						System.out.println("write...");
+					//	System.out.println("write...");
 						channel.write(buffer);
 						// channel.close();
 						System.out.println("write:" + requestString);
@@ -174,7 +180,7 @@ public class Transmitter {
 		}
 	}
 
-	private String receiveResponse() {
+	public String receiveResponse() {
 		String responseString;
 		try {
 			while (selectorForRead.select() > 0) {
@@ -222,7 +228,7 @@ public class Transmitter {
 			msg.setFrom(fromAddress);
 			msg.setSubject(mailBean.getSubject());
 			msg.setText(mailBean.getText());
-			if (mailBean.getAttachmentsAmount() > 0) {
+			if (mailBean.getAttachmentAmount() > 0) {
 				msg.setContent(mailBean.getMutipart());
 			}
 			msg.setSentDate(new Date());
@@ -277,7 +283,7 @@ public class Transmitter {
 		System.out.println("client connected");
 		StringBuffer request;
 		request = new StringBuffer();
-		int attachmentsAmount = mail.getAttachmentsAmount();
+		int attachmentsAmount = mail.getAttachmentAmount();
 		if (attachmentsAmount <= 0) {
 			request.append("0");
 			request.trimToSize();
@@ -289,7 +295,7 @@ public class Transmitter {
 			sendRequest(request.toString());
 			receiveResponse();
 
-			for (int i = 0; i < mail.getAttachmentsAmount(); i++) {
+			for (int i = 0; i < mail.getAttachmentAmount(); i++) {
 				File attachment = mail.getAttachment(i);
 				System.out.println("Attachment[" + i + "]: " + attachment.getName());
 				sendRequest(attachment.getName());

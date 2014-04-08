@@ -1,11 +1,12 @@
 package server.communicate;
 
+import static java.lang.System.out;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintStream;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
@@ -13,14 +14,18 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import server.DAO.DAO;
 import server.DAO.DAOFactory;
 import util.Util;
 import beans.Constant;
+import beans.LocalMailBean;
 import beans.MailBean;
+import beans.UserBean;
 
 public class RequestThread implements Runnable {
 	private Selector selectorForRead = null;
@@ -31,7 +36,9 @@ public class RequestThread implements Runnable {
 	private ServerSocket serverSocket;
 	private Socket client;
 	private InputStream is;
+	private ObjectOutputStream oos;
 	private boolean userConnected = false;
+	private UserBean user = new UserBean();
 	private boolean threadAlive = true;
 
 	public RequestThread(SocketChannel channel) {
@@ -42,6 +49,7 @@ public class RequestThread implements Runnable {
 			selectorForWrite = Selector.open();
 			socketChannel.register(selectorForRead, SelectionKey.OP_READ);
 			socketChannel.register(selectorForWrite, SelectionKey.OP_WRITE);
+			startServerSocket();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -87,7 +95,8 @@ public class RequestThread implements Runnable {
 				}
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			out.println("连接断开");
+			return Constant.EXIT + " ";
 		}
 		return request;
 	}
@@ -151,6 +160,7 @@ public class RequestThread implements Runnable {
 		try {
 			if (userLoginPermitted(username, password)) {
 				sendResponse(Constant.LOGIN_SUCCEED);
+				user.setUserName(username);
 				userConnected = true;
 			} else {
 				sendResponse(Constant.LOGIN_FAILED);
@@ -161,8 +171,26 @@ public class RequestThread implements Runnable {
 	}
 
 	private void handleListMails() {
+		System.out.println("select mails in database... user: " + user.getUserName());
 		if (userConnected) {
-			System.out.println("List mails.");
+			List<LocalMailBean> mails = new ArrayList<>();
+			//TODO
+			getASocketFromClient();
+			try {
+				oos = new ObjectOutputStream(client.getOutputStream());
+				mails = dao.listMails(user.getUserName()); 
+				oos.writeObject(mails);
+			} catch (IOException e) {
+				e.printStackTrace();
+			} finally {
+				threadAlive = false;
+				try {
+					oos.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			
 		} else {
 			System.err.println("Not connected!");
 		}
@@ -204,13 +232,13 @@ public class RequestThread implements Runnable {
 	private void fillMail(MailBean mail, String sender, String addressee, Timestamp sentTime, String mailSubject, String mailContent) {
 		mail.setSender(sender);
 		mail.setAddressee(addressee);
-		mail.setSentTime(sentTime);
+		mail.setSendTime(sentTime);
 		mail.setSubject(mailSubject);
 		mail.setContent(mailContent);
 	}
 
 	private void receiveAttachments(MailBean mail) {
-		startServerSocket();
+		//startServerSocket();
 		System.out.println("connected");
 		StringBuffer attachentFileLocations = new StringBuffer("");
 		String attachmentsCountString = receiveRequest();
@@ -264,8 +292,8 @@ public class RequestThread implements Runnable {
 			//ps = new PrintStream(new FileOutputStream("E:/log.txt"));
 			//System.setOut(ps);
 
-			System.out.println("File size: " + attachment.length());
-			getAStreamFromClient();
+			getASocketFromClient();
+			is = client.getInputStream();
 			fos = new FileOutputStream(attachment);
 			byte[] buffer = new byte[1024];
 			int readSize = 0;
@@ -273,7 +301,7 @@ public class RequestThread implements Runnable {
 			System.out.println("here1");
 			while ((readSize = is.read(buffer)) > 0) {
 				totalRead += readSize;
-				System.out.println(readSize);
+				//System.out.println(readSize);
 				//System.out.println("Total read: " + totalRead);
 				fos.write(buffer, 0, readSize);
 				buffer = new byte[1024];
@@ -297,10 +325,9 @@ public class RequestThread implements Runnable {
 		}
 	}
 
-	private void getAStreamFromClient() {
+	private void getASocketFromClient() {
 		try {
 			client = serverSocket.accept();
-			is = client.getInputStream();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

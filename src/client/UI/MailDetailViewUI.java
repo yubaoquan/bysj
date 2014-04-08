@@ -9,6 +9,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -129,21 +130,15 @@ public class MailDetailViewUI extends JFrame {
 		addresseeTextField.setText(mail.getAddressee());
 		addresseeTextField.setEditable(false);
 
+		attachmentNameLabel.setText("附件: " + mail.getAttachments());
+		if (mail.getAttachmentAmount() == 0) {
+			downloadAttachmentButton.setEnabled(false);
+		}
 		downloadAttachmentButton.setActionCommand(MailDetailViewUIMonitor.DOWNLOAD_ATTACHMENT);
 		downloadAttachmentButton.addActionListener(monitor);
 		backButton.setActionCommand(MailDetailViewUIMonitor.BACK);
 		backButton.addActionListener(monitor);
 		
-		setAttachmentsNames();
-	}
-
-	private void setAttachmentsNames() {
-		//TODO
-	//	String shortAttachment1Name = "1." + Util.getShortStringWithEllipsis(mail.getAttachment1Name(), 10);
-	//	String shortAttachment2Name = "2." + Util.getShortStringWithEllipsis(mail.getAttachment2Name(), 10);
-	//	String shortAttachment3Name = "3." + Util.getShortStringWithEllipsis(mail.getAttachment3Name(), 10);
-		String attachmentsNames = "附件: ";// + shortAttachment1Name + " " +  shortAttachment2Name + " " +shortAttachment3Name;
-		attachmentNameLabel.setText(attachmentsNames);
 	}
 
 	private void addComponents() {
@@ -168,7 +163,6 @@ public class MailDetailViewUI extends JFrame {
 		centerNorthPanel.add(mainTextLabel, BorderLayout.SOUTH);
 
 		centerPanel.add(centerNorthPanel, BorderLayout.NORTH);
-		//TODO
 		scrollPane = new JScrollPane(this.contentTextArea);
 		centerPanel.add(scrollPane, BorderLayout.CENTER);
 		
@@ -189,13 +183,13 @@ public class MailDetailViewUI extends JFrame {
 	public static void main(String[] args) {
 		MailBean mail = new MailBean();
 		mail.setId(1);
+		mail.setSendTime(new Timestamp(System.currentTimeMillis()));
 		mail.setSender("发信人");
 		mail.setAddressee("收信人");
 		mail.setSubject("标题");
 		mail.setText("正文");
-		/*mail.setAttachment1Name("系统提示");
-		mail.setAttachment2Name("很抱歉, 操作执行不成功！");
-		mail.setAttachment3Name("现网问题跟踪报告模板更改通知");*/
+		mail.setAttachments("attachments");
+		mail.setAttachmentAmount(1);
 		
 		MailURLLabel mailLabel = new MailURLLabel(mail);
 		List<MailURLLabel> list = new ArrayList<>();

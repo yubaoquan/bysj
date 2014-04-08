@@ -1,5 +1,8 @@
 package test;
 
+import static java.lang.System.out;
+
+import java.awt.FileDialog;
 import java.io.File;
 import java.io.FileInputStream;
 import java.nio.channels.FileChannel;
@@ -31,7 +34,7 @@ public class MyTest2 {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		testFileChannel();
+		testFileDialog();
 
 	}
 
@@ -122,7 +125,7 @@ public static void testFileChannel() {
 		MailBean mail = new MailBean();
 		mail.setSender("sender");
 		mail.setAddressee("addressee");
-		mail.setSentTime(new Timestamp(System.currentTimeMillis()));
+		mail.setSendTime(new Timestamp(System.currentTimeMillis()));
 		int offset = 0;
 		String time = "2014-04-04 14-52-59.357";
 		//String attachmentFolderName = "E:/boxMail/attachments/" + mail.getAddressee() + "/" + mail.getSendTime().toString().replace(" ", "_") + "/" + mail.getSender() + "/" + offset;
@@ -148,5 +151,24 @@ public static void testFileChannel() {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	private static void testFileChooser() {
+		JFileChooser fc = new JFileChooser();// fc.set
+		fc.setDialogTitle("选择附件");
+		fc.showDialog(null, "选择");
+		
+	
+		File attachment = fc.getSelectedFile();
+		out.println(attachment.getAbsolutePath());
+	}
+	
+	private static void testFileDialog() {
+		FileDialog fd = new FileDialog((FileDialog)null);
+		fd.setVisible(true);
+		File[] files = fd.getFiles();
+		File firstFile = files[0];
+		out.println(firstFile);
+		System.exit(0);
 	}
 }
