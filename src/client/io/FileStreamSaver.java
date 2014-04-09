@@ -18,6 +18,11 @@ public class FileStreamSaver {
 		
 	}
 	
+	public FileStreamSaver(File file, InputStream is) throws Exception{
+		bos = new BufferedOutputStream(new FileOutputStream(file));
+		bis = new BufferedInputStream(is);
+	}
+	
 	public void storeFile() throws Exception {
 		try {
 			int c;

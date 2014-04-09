@@ -48,7 +48,7 @@ public class MailSaver {
 	}
 	
 	public void saveMail(Message[] message, ReceiveMail receiveMailBean, int i) throws MessagingException, Exception {
-		String subjectName = getSuitableLengthSubjectName(receiveMailBean);
+		String subjectName = Util.cutStringIfTooLong(receiveMailBean.getSubject(), 20);
 		String singleMailFolderPath = getSingleMailFolderLocation(receiveMailBean);
 		makeFolderForMail(singleMailFolderPath);
 		String filePath = singleMailFolderPath + File.separator + subjectName + ".txt";
@@ -59,19 +59,10 @@ public class MailSaver {
 	}
 	
 	private String getSingleMailFolderLocation(ReceiveMail receiveMailBean) throws Exception {
-		String subjectName = getSuitableLengthSubjectName(receiveMailBean);
-		String singleMailFolderPath = ReceiveMail.getFilePathPrefix() + subjectName;
+		String subjectName = Util.cutStringIfTooLong(receiveMailBean.getSubject(), 20);
+		String singleMailFolderPath = ReceiveMail.getAttachmentFolderPath() + subjectName;
 		return singleMailFolderPath;
 	}
-	
-	private static String getSuitableLengthSubjectName(ReceiveMail receiveMailBean) throws MessagingException {
-		String subjectName = receiveMailBean.getSubject();
-		int subjectNameLength = 20;
-		subjectName = Util.replaceIllegalCharacters(subjectName);
-		subjectName = subjectName.length() < subjectNameLength ? subjectName : subjectName.substring(0, subjectNameLength);
-		return subjectName;
-	}
-	
 	
 	
 	private void makeFolderForMail(String folderPath) {

@@ -17,7 +17,7 @@ import javax.mail.internet.MimeUtility;
 
 import util.Util;
 
-public class MailBean implements Serializable{
+public class MailBean implements Serializable, LabelBean{
 
 	/**
 	 * 
@@ -52,7 +52,8 @@ public class MailBean implements Serializable{
 	private String attachments;
 	private int id;
 
-	public int getId() {
+	@Override
+	public int getID() {
 		return id;
 	}
 
@@ -104,6 +105,7 @@ public class MailBean implements Serializable{
 		this.internetAddressees = receiverAddresses;
 	}
 
+	@Override
 	public String getSubject() {
 		return subject;
 	}
@@ -205,7 +207,7 @@ public class MailBean implements Serializable{
 	}
 	
 	public void showPropertiesForLocalServer() {
-		Util.println("id: " + this.getId());
+		Util.println("id: " + this.getID());
 		Util.println("sender: " + this.getSender());
 		Util.println("addressee: " + this.getAddressee());
 		Util.println("subject: " + this.getSubject());

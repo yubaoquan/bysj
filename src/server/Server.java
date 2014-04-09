@@ -1,7 +1,7 @@
 package server;
 
 import beans.Constant;
-import server.communicate.RequestThread;
+import server.communicate.ResponseThread;
 import util.Util;
 
 import java.net.BindException;
@@ -35,7 +35,7 @@ public class Server {
 		try {
 			selector = Selector.open();
 			serverSocketChannel = ServerSocketChannel.open();
-			serverSocketChannel.bind(new InetSocketAddress(Constant.SERVER_PORT));
+			serverSocketChannel.bind(new InetSocketAddress(Constant.MAIN_SERVER_PORT));
 			serverSocketChannel.configureBlocking(false);
 			serverSocketChannel.socket().setReuseAddress(true);
 			serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
@@ -76,7 +76,7 @@ public class Server {
 					clientSocketChannel.configureBlocking(false);
 					System.out.println("完成连接!");
 					if (clientSocketChannel != null) {
-						new Thread(new RequestThread(clientSocketChannel)).start();
+						new Thread(new ResponseThread(clientSocketChannel)).start();
 					}
 					
 				}

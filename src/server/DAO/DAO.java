@@ -9,12 +9,31 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import beans.AttachmentBean;
 import beans.LocalMailBean;
 import beans.MailBean;
 
 public class DAO {
 
+	public static void main(String[] args) {
+		DAO dao = new DAO();
+		
+		MailBean mb = new MailBean();
+		mb.setSender("admin");
+		mb.setAddressee("receiver");
+		//mb.setSentTime(new Timestamp(System.currentTimeMillis()));
+		mb.setSubject("from JDBC");
+		mb.setText("This is from JDBC");
+	/*	mb.setAttachment1Name("attchment1");
+		mb.setAttachment2Name("attchment2");
+		mb.setAttachment3Name("attchment3");*/
+		dao.insertMailIntoMailbox(mb);
+		mb.showPropertiesForLocalServer();
+		System.out.println(dao.userExists("admin"));
+		System.out.println(dao.userExists("admin2"));
+	}
 	ResultSet rs = null;
+
 	Connection conn = null;
 
 	public DAO() {
@@ -31,9 +50,91 @@ public class DAO {
 		}
 	}
 
+	public int countMails(String username) {
+		int count = 0;
+		String sql = "select count(1) from mail";
+		try (Statement stmt = conn.createStatement()) {
+			ResultSet rs = stmt.executeQuery(sql);
+			while (rs.next()) {
+				count = rs.getInt(1);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return count;
+	}
+
+	public LocalMailBean findAttachment(int id) {
+		//String sql = ""
+		return null;
+	}
+	
+	public String findAttachmentLocationByID(int id) {
+		String result = null;
+		String sql = "select position from attachment where id = ?";
+		try (PreparedStatement stmt = conn.prepareStatement(sql);){
+			stmt.setInt(1, id);
+			rs = stmt.executeQuery();
+			if (rs.next()) {
+				result = rs.getString(1);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return result;
+	}
+
+	public String findAttachmentLocationByOffset(int mailID, int offset) {
+		String result = null;
+		String sql = "select position from attachment where mail_id = ? and offset = ?";
+		
+		try (PreparedStatement stmt = conn.prepareStatement(sql)){
+			stmt.setInt(1,mailID);
+			stmt.setInt(2, offset);
+			rs = stmt.executeQuery();
+			if (rs.next()) {
+				result = rs.getString(1);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return result;
+	}
+
+	public MailBean findMailDetail(int id) {
+		MailBean result = new MailBean();
+		String sql = "select * from mail where id = ?";
+		try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+			stmt.setInt(1, id);
+			ResultSet rs = stmt.executeQuery();
+			while (rs.next()) {
+				result.setSender(rs.getString("sender"));
+				result.setAddressee(rs.getString("addressee"));
+				result.setSubject(rs.getString("subject"));
+				result.setText(rs.getString("content"));
+				result.setSendTime(rs.getTimestamp("sendtime"));
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return result;
+	}
+
+	public void insertAttachment(AttachmentBean ab) {
+		//TODO
+		String sql = "insert into attachment (location, mail_id, offset) select ?, max(id) + 1, ? from mail";
+		try (PreparedStatement stmt = conn.prepareStatement(sql);){
+			stmt.setString(1, ab.getLocation());
+			stmt.setInt(2, ab.getOffset());
+			stmt.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public void insertMailIntoMailbox(MailBean mail) {
-		String sql = "insert into mail (sender, addressee, sendtime, subject, content, attachments) "
-				+ "values (?, ?, ?, ?, ?, ?)";
+		String sql = "insert into mail (id, sender, addressee, sendtime, subject, content, attachments) "
+				+ "select max(id)+1, ?, ?, ?, ?, ?, ? from mail";
 		try (PreparedStatement stmt = conn.prepareStatement(sql);){
 			stmt.setString(1, mail.getSender());
 			stmt.setString(2, mail.getAddressee());
@@ -68,6 +169,7 @@ public class DAO {
 			rs = stmt.executeQuery();
 			while (rs.next()) {
 				LocalMailBean mail = new LocalMailBean();
+				mail.setId(rs.getInt("id"));
 				mail.setSender(rs.getString("sender"));
 				mail.setSendTime(rs.getTimestamp("sendtime"));
 				mail.setSubject(rs.getString("subject"));
@@ -79,75 +181,6 @@ public class DAO {
 			e.printStackTrace();
 		}
 		return mails;
-	}
-
-	public int countMails(String username) {
-		int count = 0;
-		String sql = "select count(1) from mail";
-		try (Statement stmt = conn.createStatement()) {
-			ResultSet rs = stmt.executeQuery(sql);
-			while (rs.next()) {
-				count = rs.getInt(1);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return count;
-	}
-
-	public MailBean findMailDetail(int id) {
-		MailBean result = new MailBean();
-		String sql = "select * from mail where id = ?";
-		try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-			stmt.setInt(1, id);
-			ResultSet rs = stmt.executeQuery();
-			while (rs.next()) {
-				result.setSender(rs.getString("sender"));
-				result.setAddressee(rs.getString("addressee"));
-				result.setSubject(rs.getString("subject"));
-				result.setText(rs.getString("content"));
-				result.setSendTime(rs.getTimestamp("sendtime"));
-				//TODO
-				/*result.setAttachment1Name(rs.getString("attachment_1"));
-				result.setAttachment2Name(rs.getString("attachment_3"));
-				result.setAttachment2Name(rs.getString("attachment_3"));*/
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return result;
-	}
-
-	public String findAttachmentPositionByID(int id) {
-		String result = null;
-		String sql = "select position from attachment where id = ?";
-		try (PreparedStatement stmt = conn.prepareStatement(sql);){
-			stmt.setInt(1, id);
-			rs = stmt.executeQuery();
-			if (rs.next()) {
-				result = rs.getString(1);
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return result;
-	}
-
-	public String findAttachmentPositionByOffset(int mailID, int offset) {
-		String result = null;
-		String sql = "select position from attachment where mail_id = ? and offset = ?";
-		
-		try (PreparedStatement stmt = conn.prepareStatement(sql)){
-			stmt.setInt(1,mailID);
-			stmt.setInt(2, offset);
-			rs = stmt.executeQuery();
-			if (rs.next()) {
-				result = rs.getString(1);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return result;
 	}
 
 	public boolean userExists(String username) {
@@ -182,24 +215,6 @@ public class DAO {
 			e.printStackTrace();
 		}
 		return false;
-	}
-
-	public static void main(String[] args) {
-		DAO dao = new DAO();
-		
-		MailBean mb = new MailBean();
-		mb.setSender("admin");
-		mb.setAddressee("receiver");
-		//mb.setSentTime(new Timestamp(System.currentTimeMillis()));
-		mb.setSubject("from JDBC");
-		mb.setText("This is from JDBC");
-	/*	mb.setAttachment1Name("attchment1");
-		mb.setAttachment2Name("attchment2");
-		mb.setAttachment3Name("attchment3");*/
-		dao.insertMailIntoMailbox(mb);
-		mb.showPropertiesForLocalServer();
-		System.out.println(dao.userExists("admin"));
-		System.out.println(dao.userExists("admin2"));
 	}
 
 }

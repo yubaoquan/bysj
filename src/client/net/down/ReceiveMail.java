@@ -36,7 +36,7 @@ import beans.Constant;
 import beans.LocalMailBean;
 import beans.MailBean;
 import beans.UserBean;
-import client.UI.MailListUI;
+import client.UI.ItemListUI;
 import client.io.MailSaver;
 import client.net.up.Transmitter;
 
@@ -260,7 +260,7 @@ public class ReceiveMail {
 			ArrayList<LocalMailBean> localMails = (ArrayList<LocalMailBean>)ois.readObject();
 			ArrayList<MailBean> mails = (ArrayList<MailBean>) Util.convertLocalMaisToMails(localMails);
 			
-			new MailListUI(mails).launch();
+			new ItemListUI(mails).launch();
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -289,7 +289,7 @@ public class ReceiveMail {
 		Message[] messages = folder.getMessages();
 		out.println("Messages' length: " + messages.length);
 		List<MailBean> mails = receiveAndSaveAsMailBeans(messages);
-		new MailListUI(mails);
+		new ItemListUI(mails);
 	}
 
     private List<MailBean> receiveAndSaveAsMailBeans(Message[] messages) throws Exception {
@@ -321,7 +321,7 @@ public class ReceiveMail {
         mail.setAttachmentAmount(attachments.size());
         StringBuffer attachmentNames = new StringBuffer();
         for (AttachmentBean ab : attachments) {
-        	attachmentNames.append(ab.getTitle());
+        	attachmentNames.append(ab.getSubject());
         }
         String attachmentNameString = Util.getShortStringWithEllipsis(attachmentNames.toString(), 20);
         mail.setAttachmentNames(attachmentNameString);
@@ -366,15 +366,19 @@ public class ReceiveMail {
         props.put("mail.smtp.auth", "true");
         Session session = Session.getDefaultInstance(props, null);
         URLName urlName = new URLName("pop3", pop3ServerAddress, pop3ServerPort, null, userName, password);
-        setFilePathPrefix("E:\\receive\\" + userName + File.separator);
+        setAttachmentFolderPath(Constant.INTERNET_ATTACHMENTS_ROOT_PATH + userName + File.separator);
         return session.getStore(urlName);
     }
 
-    public static void setFilePathPrefix(String filePathPrefix) {
+    public static void setAttachmentFolderPath(String filePathPrefix) {
         ReceiveMail.filePathPrefix = filePathPrefix;
+        File folder = new File(filePathPrefix);
+        if (!folder.exists()) {
+        	folder.mkdirs();
+        }
     }
 
-    public static String getFilePathPrefix() {
+    public static String getAttachmentFolderPath() {
         return filePathPrefix;
     }
 

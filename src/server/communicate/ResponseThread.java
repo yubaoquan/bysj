@@ -1,6 +1,7 @@
 package server.communicate;
 
 import static java.lang.System.out;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -22,12 +23,14 @@ import java.util.Set;
 import server.DAO.DAO;
 import server.DAO.DAOFactory;
 import util.Util;
+import beans.AttachmentBean;
 import beans.Constant;
 import beans.LocalMailBean;
 import beans.MailBean;
 import beans.UserBean;
 
-public class RequestThread implements Runnable {
+public class ResponseThread implements Runnable {
+	
 	private Selector selectorForRead = null;
 	private Selector selectorForWrite = null;
 	private SocketChannel socketChannel = null;
@@ -41,7 +44,7 @@ public class RequestThread implements Runnable {
 	private UserBean user = new UserBean();
 	private boolean threadAlive = true;
 
-	public RequestThread(SocketChannel channel) {
+	public ResponseThread(SocketChannel channel) {
 		socketChannel = channel;
 		buffer = ByteBuffer.allocateDirect(1024);
 		try {
@@ -255,13 +258,23 @@ public class RequestThread implements Runnable {
 				long fileLength = Long.parseLong(fileLengthString);
 				String attachmentLocation = receiveFile(mail, i, attachmentName, fileLength);
 				System.out.println("receiveFile() called once");
-				attachentFileLocations.append(attachmentLocation).append(",");
+				//TODO 
+				storeAttachment(i, attachmentName, attachmentLocation);
+				attachentFileLocations.append(attachmentLocation).append(Constant.ATTACHMENTS_SEPARATOR);
 				sendResponse("OK");
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
 		mail.setAttachmentNames(attachentFileLocations.toString());
+	}
+
+	private void storeAttachment(int i, String attachmentName, String attachmentLocation) {
+		AttachmentBean ab = new AttachmentBean();
+		ab.setOffset(i);
+		ab.setTitle(attachmentName);
+		ab.setLocation(attachmentLocation);
+		dao.insertAttachment(ab);
 	}
 
 	private String receiveFile(MailBean mail, int offset, String attachmentName, long fileLength) throws IOException, FileNotFoundException {
@@ -271,7 +284,7 @@ public class RequestThread implements Runnable {
 	}
 
 	private File makeFile(MailBean mail, int offset, String attachmentName) throws IOException {
-		String attachmentFolderName = "E:/boxMail/attachments/" + mail.getAddressee() + "/" + mail.getSendTime().toString().replace(":", "-") + "/" + mail.getSender() + "/" + offset;
+		String attachmentFolderName = Constant.LOCAL_ATTACHMENTS_ROOT_PATH + mail.getAddressee() + "/" + mail.getSendTime().toString().replace(":", "-") + "/" + mail.getSender() + "/" + offset;
 		File attachmentFolder = new File(attachmentFolderName);
 		if (!attachmentFolder.exists()) {
 			attachmentFolder.mkdirs();
@@ -319,7 +332,7 @@ public class RequestThread implements Runnable {
 
 	private void startServerSocket() {
 		try {
-			serverSocket = new ServerSocket(8866);
+			serverSocket = new ServerSocket(Constant.FILE_SERVER_PORT);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

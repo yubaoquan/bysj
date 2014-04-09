@@ -137,7 +137,7 @@ public class Transmitter {
 	}
 
 	private void initConnect() throws IOException {
-		SocketAddress socketAddress = new InetSocketAddress(Constant.SERVER_HOSTNAME, Constant.SERVER_PORT);
+		SocketAddress socketAddress = new InetSocketAddress(Constant.SERVER_HOSTNAME, Constant.MAIN_SERVER_PORT);
 		socketChannel = SocketChannel.open();
 		socketChannel.configureBlocking(false);
 		initSelector = Selector.open();
@@ -364,7 +364,7 @@ public class Transmitter {
 
 	private void connectToFileServer() {
 			try {
-				socket = new Socket("127.0.0.1", 8866);
+				socket = new Socket("127.0.0.1", Constant.FILE_SERVER_PORT);
 				os = socket.getOutputStream();
 			} catch (Exception e) {
 				e.printStackTrace();

@@ -2,20 +2,52 @@ package beans;
 
 import javax.mail.Part;
 
-public class AttachmentBean {
+public class AttachmentBean implements LabelBean{
 	private int id;
+	private int mailID;
+	public int getMailID() {
+		return mailID;
+	}
+
+	public void setMailID(int mailID) {
+		this.mailID = mailID;
+	}
+
+	public String getLocation() {
+		return location;
+	}
+
+	public void setLocation(String location) {
+		this.location = location;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
 	private String title;
 	private Part part;
+	private int offset;
+	private String location;
+	
+	public int getOffset() {
+		return offset;
+	}
 
-	public int getId() {
+	public void setOffset(int offset) {
+		this.offset = offset;
+	}
+
+	@Override
+	public int getID() {
 		return id;
 	}
 
 	public void setId(int id) {
 		this.id = id;
 	}
-
-	public String getTitle() {
+	@Override
+	public String getSubject() {
 		return title;
 	}
 
@@ -24,6 +56,10 @@ public class AttachmentBean {
 		this.id = id;
 		this.title = title;
 		this.part = part;
+	}
+
+	public AttachmentBean() {
+		
 	}
 
 	public void setTitle(String title) {

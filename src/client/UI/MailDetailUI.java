@@ -24,14 +24,15 @@ import javax.swing.border.MatteBorder;
 
 import util.Util;
 import client.UI.EditMailUI.EditMailUICommandCode;
+import beans.LabelBean;
 import beans.MailBean;
 import beans.UserBean;
 
-public class MailDetailViewUI extends JFrame {
+public class MailDetailUI extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 	private MailBean mail = null;
-	private MailListUI parentUI = null;
+	private ItemListUI parentUI = null;
 
 	private JPanel mainPanel = new JPanel();
 	private JPanel senderNamePanel = new JPanel();
@@ -64,8 +65,8 @@ public class MailDetailViewUI extends JFrame {
 
 	private MailDetailViewUIMonitor monitor = new MailDetailViewUIMonitor();
 
-	public MailDetailViewUI(MailBean mail, MailListUI parent) {
-		this.mail = mail;
+	public MailDetailUI(MailBean labelBean, ItemListUI parent) {
+		this.mail = labelBean;
 		this.parentUI = parent;
 	}
 	
@@ -144,7 +145,7 @@ public class MailDetailViewUI extends JFrame {
 	private void addComponents() {
 		senderNamePanel.add(senderLabel, BorderLayout.WEST);
 		senderNamePanel.add(senderNameTextField, BorderLayout.CENTER);
-//TODO
+
 		sentTimePanel.add(sentTimeLabel, BorderLayout.WEST);
 		sentTimePanel.add(sentTimeTextField, BorderLayout.CENTER);
 		
@@ -191,12 +192,12 @@ public class MailDetailViewUI extends JFrame {
 		mail.setAttachmentNames("attachments");
 		mail.setAttachmentAmount(1);
 		
-		MailURLLabel mailLabel = new MailURLLabel(mail);
-		List<MailURLLabel> list = new ArrayList<>();
+		URLLabel mailLabel = new URLLabel(mail);
+		List<URLLabel> list = new ArrayList<>();
 		list.add(mailLabel);
 		//	TODO
-		MailListUI parent = new MailListUI();
-		new MailDetailViewUI(mail, parent).launch();
+		ItemListUI parent = new ItemListUI();
+		new MailDetailUI(mail, parent).launch();
 
 	}
 
@@ -232,12 +233,13 @@ public class MailDetailViewUI extends JFrame {
 		private void onDownloadAttachmentButtonPressed() {
 			//	TODO
 			System.out.println("download attachment");
+			new ItemListUI(MailDetailUI.this.mail.getAttachmentBeans(), URLLabel.FOR_ATTACHMENT);
 		}
 
 		private void onBackButtonPressed() {
 			System.out.println("back");
-			MailDetailViewUI.this.parentUI.setVisible(true);
-			MailDetailViewUI.this.dispose();
+			MailDetailUI.this.parentUI.setVisible(true);
+			MailDetailUI.this.dispose();
 		}
 	}
 }

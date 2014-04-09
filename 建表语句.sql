@@ -69,3 +69,34 @@ DROP COLUMN `attachment_3`,
 DROP COLUMN `attachment_2`,
 CHANGE COLUMN `attachment_1` `attachments` TEXT NULL DEFAULT NULL ;
 
+ALTER TABLE `bysj`.`attachment` 
+DROP FOREIGN KEY `sender_name_fk`,
+DROP FOREIGN KEY `addressee_name_fk`;
+ALTER TABLE `bysj`.`attachment` 
+DROP INDEX `sender_name_fk` ;
+
+CREATE TABLE `attachment` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `location` varchar(100) DEFAULT NULL,
+  `mail_id` int(11) DEFAULT NULL,
+  `offset` int(11) DEFAULT NULL COMMENT '在附件列表中的序号，每个邮件有一个附件列表',
+  `sender_name` varchar(50) DEFAULT NULL,
+  `addressee_name` varchar(50) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `mail_id_fk` (`mail_id`),
+  KEY `addressee_name_fk` (`addressee_name`),
+  CONSTRAINT `mail_id_fk` FOREIGN KEY (`mail_id`) REFERENCES `mail` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+ALTER TABLE `bysj`.`attachment` 
+DROP COLUMN `addressee_name`,
+DROP COLUMN `sender_name`,
+DROP INDEX `addressee_name_fk` ;
+
+ALTER TABLE `bysj`.`attachment` 
+DROP FOREIGN KEY `mail_id_fk`;
+
+ALTER TABLE `bysj`.`mail` 
+CHANGE COLUMN `id` `id` INT(11) NOT NULL ;
+
