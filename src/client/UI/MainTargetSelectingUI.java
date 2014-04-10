@@ -2,19 +2,22 @@ package client.UI;
 
 import java.awt.FlowLayout;
 import java.awt.event.*;
+
 import javax.swing.*;
 
 import beans.UserBean;
 import client.net.down.ReceiveMail;
+import client.net.up.Transmitter;
 
 
 
 
 public class MainTargetSelectingUI {
 
-	public MainTargetSelectingUI(UserBean li) {
+	public MainTargetSelectingUI(UserBean li, Transmitter tra) {
 		super();
 		user = li;
+		transmitter = tra;
 	}
 
 	public static enum Selection {SEND,RECEIVE}
@@ -26,6 +29,7 @@ public class MainTargetSelectingUI {
 	private FlowLayout layout = new FlowLayout();
 	private MainTargetSelectingUIMonitor mainTargetSelectingUIMonitor = new MainTargetSelectingUIMonitor();
 	private UserBean user;
+	private Transmitter transmitter;
 	
 	public void initUI() {
 		setAttributes();
@@ -52,7 +56,7 @@ public class MainTargetSelectingUI {
 	}
 	public static void main(String[] args) {
 		UserBean testLi = new UserBean();
-		new MainTargetSelectingUI(testLi).initUI();
+		new MainTargetSelectingUI(testLi, null).initUI();
 	}
 	
 	private class MainTargetSelectingUIMonitor implements ActionListener {
@@ -74,19 +78,18 @@ public class MainTargetSelectingUI {
 		
 		private void onSendOptionSelected() {
 			frame.dispose();
-			new EditMailUI(user).launch();
+			new EditMailUI(user, transmitter).launch();
 		}
 		
 		private void onReceiveOptionSelected() {
 			System.out.println("receive");
 			try {
-				new ReceiveMail().loginAndReceiveMail(user);
+				new ReceiveMail().loginAndReceiveMail(user, transmitter);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 			JOptionPane.showConfirmDialog(null, (String)"邮件接收完成!", "finish", JOptionPane.CLOSED_OPTION);
 			frame.dispose();
-			//System.exit(0);
 		}
 
 	}

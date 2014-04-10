@@ -69,9 +69,19 @@ public class EditMailUI {
 	private JButton removeExtraItemButton = new JButton("移除附件");
 	private JLabel extraItemNameLabel = new JLabel("附件:");
 	private JButton sendButton = new JButton("发送");
+	private Transmitter transmitter;
 
-	public EditMailUI(UserBean li) {
+	public Transmitter getTransmitter() {
+		return transmitter;
+	}
+
+	public void setTransmitter(Transmitter transmitter) {
+		this.transmitter = transmitter;
+	}
+
+	public EditMailUI(UserBean li, Transmitter transmitter) {
 		user = li;
+		this.transmitter = transmitter;
 	}
 
 	public void launch() {
@@ -169,7 +179,7 @@ public class EditMailUI {
 	public static void main(String[] args) {
 		UserBean loginBean = new UserBean();
 		loginBean.setUserName("user");
-		new EditMailUI(loginBean).launch();
+		new EditMailUI(loginBean, null).launch();
 
 	}
 
@@ -225,7 +235,7 @@ public class EditMailUI {
 
 		private void onSendButtonClick() {
 			if (fillMail()) {
-				boolean sendSucceed = Transmitter.getInstance(user).sendMail(mail);
+				boolean sendSucceed = transmitter.sendMail(mail);
 				if (sendSucceed) {
 					int option = JOptionPane.showConfirmDialog(frame, (String) "发送成功,是否再发一个.", "已发送", JOptionPane.YES_NO_OPTION);
 					switch (option) {
@@ -337,7 +347,7 @@ public class EditMailUI {
 	}
 
 	private void terminate() {
-		Transmitter.getInstance(user).closeConnection();
+		transmitter.closeConnection();
 		System.exit(0);
 	}
 }

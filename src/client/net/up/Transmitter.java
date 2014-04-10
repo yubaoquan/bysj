@@ -55,7 +55,7 @@ public class Transmitter {
 		return transmitter;
 	}
 
-	private Transmitter(UserBean user) {
+	public Transmitter(UserBean user) {
 		this.user = user;
 		props = new Properties();
 		props.setProperty("mail.smtp.auth", "true");

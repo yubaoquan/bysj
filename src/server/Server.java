@@ -4,8 +4,10 @@ import beans.Constant;
 import server.communicate.ResponseThread;
 import util.Util;
 
+import java.io.IOException;
 import java.net.BindException;
 import java.net.InetSocketAddress;
+import java.net.ServerSocket;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
@@ -22,6 +24,7 @@ import java.util.logging.Logger;
 public class Server {
 
 	private boolean started = false;
+	private ServerSocket fileServerSocket;
 	private static Selector selector = null;
 	private static ServerSocketChannel serverSocketChannel = null;
 	private final static Logger logger = Logger.getLogger(Server.class.getName());
@@ -39,6 +42,7 @@ public class Server {
 			serverSocketChannel.configureBlocking(false);
 			serverSocketChannel.socket().setReuseAddress(true);
 			serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
+			startFileServerSocket();
 			System.out.println("bind ok");
 			listen();
 
@@ -49,6 +53,14 @@ public class Server {
 			e.printStackTrace();
 		}
 
+	}
+	
+	public void startFileServerSocket() {
+		try {
+			fileServerSocket = new ServerSocket(Constant.FILE_SERVER_PORT);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -64,7 +76,6 @@ public class Server {
 		while (selector.select() > 0) {
 			
 			Set<SelectionKey> selectionKeys = selector.selectedKeys();
-			// Util.println("size: " + selectionKeys.size());
 			Iterator<SelectionKey> it = selectionKeys.iterator();
 			while (it.hasNext()) {
 				SelectionKey selectionKey = it.next();
@@ -76,7 +87,7 @@ public class Server {
 					clientSocketChannel.configureBlocking(false);
 					System.out.println("完成连接!");
 					if (clientSocketChannel != null) {
-						new Thread(new ResponseThread(clientSocketChannel)).start();
+						new Thread(new ResponseThread(clientSocketChannel, fileServerSocket)).start();
 					}
 					
 				}

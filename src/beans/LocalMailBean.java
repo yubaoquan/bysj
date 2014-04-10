@@ -33,40 +33,9 @@ public class LocalMailBean implements Serializable {
 	private String addressee;
 	private Timestamp sendTime;
 	private File[] attachmentsForLocalServer = new File[ATTACHMENTS_CAPACITY];
-	private String attachments;
+	private String attachmentNames;
+	private String attachmentLocations;
 	private int id;
-
-	public int getId() {
-		return id;
-	}
-
-	public void setId(int id) {
-		this.id = id;
-	}
-
-	public String getText() {
-		return text;
-	}
-
-	public String getContent() {
-		return text;
-	}
-
-	public void setContent(String content) {
-		setText(content);
-	}
-
-	public void setText(String text) {
-		this.text = text;
-	}
-
-	public String getSubject() {
-		return subject;
-	}
-
-	public void setSubject(String subject) {
-		this.subject = subject;
-	}
 
 	public void addAttachment(File attachment, int mailType) {
 		if (attachmentsAreFull()) {
@@ -76,13 +45,57 @@ public class LocalMailBean implements Serializable {
 		this.attachmentCounter++;
 	}
 
+	private void addAttachmentForLocalServer(File attachment) {
+		attachmentsForLocalServer[attachmentCounter] = attachment;
+		System.out.println("Add attachment for local server");
+	}
+
 	public boolean attachmentsAreFull() {
 		return this.attachmentCounter >= ATTACHMENTS_CAPACITY;
 	}
 
-	private void addAttachmentForLocalServer(File attachment) {
-		attachmentsForLocalServer[attachmentCounter] = attachment;
-		System.out.println("Add attachment for local server");
+	public String getAddressee() {
+		return addressee;
+	}
+
+	public File getAttachment(int offset) {
+		return attachmentsForLocalServer[offset];
+	}
+
+	public String getAttachmentLocations() {
+		return attachmentLocations;
+	}
+
+	public String getAttachmentNames() {
+		return attachmentNames;
+	}
+
+	public int getAttachmentsAmount() {
+		return attachmentCounter;
+	}
+
+	public String getContent() {
+		return text;
+	}
+
+	public int getID() {
+		return id;
+	}
+
+	public String getSender() {
+		return sender;
+	}
+
+	public Timestamp getSendTime() {
+		return sendTime;
+	}
+
+	public String getSubject() {
+		return subject;
+	}
+
+	public String getText() {
+		return text;
 	}
 
 	public void removeAllExtraItems() {
@@ -90,53 +103,49 @@ public class LocalMailBean implements Serializable {
 		attachmentCounter = 0;
 	}
 
-	public int getAttachmentsAmount() {
-		return attachmentCounter;
+	public void setAddressee(String addressee) {
+		this.addressee = addressee;
 	}
 
-	public String getSender() {
-		return sender;
+	public void setAttachmentLocations(String attachmentLocations) {
+		this.attachmentLocations = attachmentLocations;
+	}
+
+	public void setAttachmentNames(String attachments) {
+		this.attachmentNames = attachments;
+	}
+
+	public void setContent(String content) {
+		setText(content);
+	}
+
+	public void setId(int id) {
+		this.id = id;
 	}
 
 	public void setSender(String sender) {
 		this.sender = sender;
 	}
 
-	public String getAddressee() {
-		return addressee;
-	}
-
-	public void setAddressee(String addressee) {
-		this.addressee = addressee;
-	}
-
-	public Timestamp getSendTime() {
-		return sendTime;
-	}
-
 	public void setSendTime(Timestamp sendTime) {
 		this.sendTime = sendTime;
 	}
 
-	public File getAttachment(int offset) {
-		return attachmentsForLocalServer[offset];
+	public void setSubject(String subject) {
+		this.subject = subject;
+	}
+
+	public void setText(String text) {
+		this.text = text;
 	}
 
 	public void showPropertiesForLocalServer() {
-		Util.println("id: " + this.getId());
+		Util.println("id: " + this.getID());
 		Util.println("sender: " + this.getSender());
 		Util.println("addressee: " + this.getAddressee());
 		Util.println("subject: " + this.getSubject());
 		Util.println("sender: " + this.getSender());
 		Util.println("content: " + this.getText());
 
-	}
-
-	public String getAttachments() {
-		return attachments;
-	}
-
-	public void setAttachments(String attachments) {
-		this.attachments = attachments;
 	}
 }

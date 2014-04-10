@@ -17,9 +17,10 @@ import util.Util;
 import beans.AttachmentBean;
 import beans.LabelBean;
 import beans.MailBean;
+import client.net.down.ReceiveMail;
 
 public class ItemListUI extends JFrame {
-//[
+	// [
 	private static final long serialVersionUID = 1L;
 	private static final int MAILS_EACH_PAGE = 10;
 	private static final String NEXT_PAGE = "NEXT_PAGE";
@@ -29,47 +30,60 @@ public class ItemListUI extends JFrame {
 	private JPanel northPanel = new JPanel();
 	private JPanel centerPanel = new JPanel();
 	private JPanel southPanel = new JPanel();
-	
+
 	private JLabel northLabel = new JLabel("", JLabel.CENTER);
 	private JButton previousButton = new JButton("上一页");
 	private JButton nextPageButton = new JButton("下一页");
 
 	MailListUIMonitor monitor = new MailListUIMonitor();
 
+	private ReceiveMail receiveMail;
+
+	public ReceiveMail getReceiveMail() {
+		return receiveMail;
+	}
+
+	public void setReceiveMail(ReceiveMail parent) {
+		this.receiveMail = parent;
+	}
+
 	private List<LabelBean> labelBeans;
 	private List<URLLabel> labels = new ArrayList<>();
 	private int labelCount = 0;
 	private int currentPage = 0;
 	private int lastPage = 0;
-	public int currentIndex = 0;//the position in the mail URL list of the first link in the center panel
-	//]
+	public int currentIndex = 0;// the position in the mail URL list of the
+								// first link in the center panel
+
+	// ]
 	public ItemListUI() {
-		//this.setTitle("邮件列表");
+		// this.setTitle("邮件列表");
 		configureFrame();
 		setLayouts();
 	}
 
-	public ItemListUI(List items) {
+	public ItemListUI(List items, ReceiveMail parent) {
 		this(items, URLLabel.FOR_MAIL);
+		this.receiveMail = parent;
 	}
-	
+
 	public ItemListUI(List items, int type) {
 		this();
 		this.labelBeans = items;
 		switch (type) {
 			case URLLabel.FOR_MAIL:
 				this.setTitle("邮件列表");
-				for (int i = items.size(); i > 0; i --) {
+				for (int i = items.size(); i > 0; i--) {
 					URLLabel mailURLLabel = new URLLabel((MailBean) items.get(i - 1), this, URLLabel.FOR_MAIL);
-				//	Util.println("add " + mailURLLabel.getSubject());
+					// Util.println("add " + mailURLLabel.getSubject());
 					labels.add(mailURLLabel);
 				}
 				break;
 			case URLLabel.FOR_ATTACHMENT:
 				this.setTitle("附件列表");
-				for (int i = items.size(); i > 0; i --) {
+				for (int i = items.size(); i > 0; i--) {
 					URLLabel attachmentURLLabel = new URLLabel((AttachmentBean) items.get(i - 1), this, URLLabel.FOR_ATTACHMENT);
-				//	Util.println("add " + mailURLLabel.getSubject());
+					// Util.println("add " + mailURLLabel.getSubject());
 					labels.add(attachmentURLLabel);
 				}
 				break;
@@ -77,7 +91,7 @@ public class ItemListUI extends JFrame {
 		this.setMailURLLabels(labels);
 		launch();
 	}
-	
+
 	public void launch() {
 		this.setVisible(true);
 	}
@@ -92,7 +106,7 @@ public class ItemListUI extends JFrame {
 		this.setLayout(new BorderLayout());
 		mainPanel.setLayout(new BorderLayout());
 		northPanel.setLayout(new BorderLayout());
-		centerPanel.setLayout(new GridLayout(10,1));
+		centerPanel.setLayout(new GridLayout(10, 1));
 		southPanel.setLayout(new BorderLayout());
 	}
 
@@ -129,10 +143,10 @@ public class ItemListUI extends JFrame {
 	private void addMailsToCenterPanel(List<URLLabel> itemLabels, int startIndex) {
 		if (startIndex < itemLabels.size()) {
 			centerPanel.removeAll();
-			centerPanel.setLayout(new GridLayout(10,1));
+			centerPanel.setLayout(new GridLayout(10, 1));
 			int currentIndex = 0;
 			for (int i = 0; i < MAILS_EACH_PAGE; i++) {
-				currentIndex = i +startIndex;
+				currentIndex = i + startIndex;
 				if (currentIndex == labelCount) {
 					break;
 				}
@@ -153,9 +167,11 @@ public class ItemListUI extends JFrame {
 		mail.setAddressee("收信人");
 		mail.setSubject("标题");
 		mail.setText("正文");
-		/*mail.setAttachment1Name("系统提示");
-		mail.setAttachment2Name("很抱歉, 操作执行不成功！");
-		mail.setAttachment3Name("现网问题跟踪报告模板更改通知");*/
+		/*
+		 * mail.setAttachment1Name("系统提示");
+		 * mail.setAttachment2Name("很抱歉, 操作执行不成功！");
+		 * mail.setAttachment3Name("现网问题跟踪报告模板更改通知");
+		 */
 
 		URLLabel mailLabel = new URLLabel(mail, mailListUI, URLLabel.FOR_MAIL);
 		List<URLLabel> list = new ArrayList<>();
@@ -185,7 +201,7 @@ public class ItemListUI extends JFrame {
 		private void onNextButtonPressed() {
 			Util.println("下一页");
 			if (currentPage < lastPage) {
-				currentPage ++;
+				currentPage++;
 				previousButton.setEnabled(true);
 				currentIndex += MAILS_EACH_PAGE;
 				addMailsToCenterPanel(labels, currentIndex);
@@ -198,7 +214,7 @@ public class ItemListUI extends JFrame {
 		private void onPreviousButtonPressed() {
 			Util.println("上一页");
 			if (currentPage > 0) {
-				currentPage --;
+				currentPage--;
 				nextPageButton.setEnabled(true);
 				currentIndex -= MAILS_EACH_PAGE;
 				addMailsToCenterPanel(labels, currentIndex);
@@ -222,15 +238,15 @@ public class ItemListUI extends JFrame {
 		configurePanels(itemLbels);
 		configureButtons();
 	}
-	
-	private int  calculateTotalPages(int records) {
+
+	private int calculateTotalPages(int records) {
 		int totalPages = 0;
 		if (records <= 10) {
 			totalPages = 1;
 		} else {
 			totalPages = records / 10;
 			if (records % 10 != 0) {
-				totalPages ++;
+				totalPages++;
 			}
 		}
 		Util.println("records: " + records + " pages: " + totalPages);

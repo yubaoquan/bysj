@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.mail.MessagingException;
 
+import client.net.down.ReceiveMail;
 import beans.AttachmentBean;
 import beans.LocalMailBean;
 import beans.MailBean;
@@ -14,66 +15,70 @@ public class Util {
 		System.out.println(obj);
 		return;
 	}
-	
+
 	public static void print(Object obj) {
 		System.out.print(obj);
 	}
-	
+
 	public static String getShortStringWithEllipsis(String input, int limit) {
 		int ellipsisLength = 3;
 		int limitWithoutEllipsisLength = limit - ellipsisLength;
 		int preLength = input.length();
-		
+
 		if (preLength > limitWithoutEllipsisLength) {
 			input = input.substring(0, limitWithoutEllipsisLength) + "...";
 		}
 		return input;
 	}
-	
-	
-	public static List<MailBean> convertLocalMaisToMails(List<LocalMailBean> localMails) {
+
+	public static List<MailBean> convertLocalMaisToMails(List<LocalMailBean> localMails, ReceiveMail receiveMail) {
 		List<MailBean> mails = new ArrayList<>();
 		for (LocalMailBean lmb : localMails) {
-			MailBean mb = convertLocalMailToMail(lmb);
+			MailBean mb = convertLocalMailToMail(lmb, receiveMail);
 			mails.add(mb);
 		}
 		return mails;
 	}
-	
 
-	public static MailBean convertLocalMailToMail(LocalMailBean localMail) {
+	public static MailBean convertLocalMailToMail(LocalMailBean localMail, ReceiveMail receiveMail) {
 		MailBean mail = new MailBean();
-		mail.setId(localMail.getId());
+		mail.setId(localMail.getID());
 		mail.setSender(localMail.getSender());
 		mail.setAddressee(localMail.getAddressee());
 		mail.setSendTime(localMail.getSendTime());
-		
+
 		mail.setSubject(localMail.getSubject());
 		mail.setContent(localMail.getContent());
-		mail.setAttachmentNames(localMail.getAttachments());
-		String[] attachmentNameArray = localMail.getAttachments().split("\n");
-		if (attachmentNameArray.length > 0) {
+
+		if (localMail.getAttachmentNames() != null) {
+			mail.setAttachmentNames(localMail.getAttachmentNames());
+			String[] attachmentNameArray = localMail.getAttachmentNames().split("\n");
+			//String[] attachmentLocationArray = localMail.getAttachmentLocations().split("\n");
+			mail.setAttachmentAmount(attachmentNameArray.length);
 			ArrayList<AttachmentBean> attachments = new ArrayList<>();
-			for (int i = 0; i < attachmentNameArray.length; i ++) {
+			for (int i = 0; i < attachmentNameArray.length; i++) {
 				AttachmentBean ab = new AttachmentBean();
+				ab.setMailID(localMail.getID());
 				ab.setOffset(i);
+				ab.setOwner(localMail.getAddressee());
 				ab.setTitle(attachmentNameArray[i]);
+				ab.setReceiveMail(receiveMail);
 				attachments.add(ab);
 			}
 			mail.setAttachmentBeans(attachments);
 		}
+
 		return mail;
 	}
-	
+
 	public static String replaceIllegalCharacters(String subjectName) {
-		char[] illegalCharacters = { ':', '/', '\\', '?', '*', '<', '>', '|', '\"',' ',',' };
+		char[] illegalCharacters = { ':', '/', '\\', '?', '*', '<', '>', '|', '\"', ' ', ',' };
 		for (char ch : illegalCharacters) {
 			subjectName = subjectName.replace(ch, '_');
 		}
 		return subjectName;
 	}
-	
-	
+
 	public static String cutStringIfTooLong(String subject, int limit) throws MessagingException {
 		String subjectName = subject;
 		int subjectNameLength = limit;

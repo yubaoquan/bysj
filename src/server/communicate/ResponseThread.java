@@ -3,11 +3,13 @@ package server.communicate;
 import static java.lang.System.out;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
@@ -36,7 +38,7 @@ public class ResponseThread implements Runnable {
 	private SocketChannel socketChannel = null;
 	private ByteBuffer buffer = null;
 	private DAO dao = DAOFactory.getDAOInstance();
-	private ServerSocket serverSocket;
+	private ServerSocket fileserverSocket;
 	private Socket client;
 	private InputStream is;
 	private ObjectOutputStream oos;
@@ -44,7 +46,8 @@ public class ResponseThread implements Runnable {
 	private UserBean user = new UserBean();
 	private boolean threadAlive = true;
 
-	public ResponseThread(SocketChannel channel) {
+	public ResponseThread(SocketChannel channel, ServerSocket serverSocket) {
+		this.fileserverSocket = serverSocket;
 		socketChannel = channel;
 		buffer = ByteBuffer.allocateDirect(1024);
 		try {
@@ -52,7 +55,6 @@ public class ResponseThread implements Runnable {
 			selectorForWrite = Selector.open();
 			socketChannel.register(selectorForRead, SelectionKey.OP_READ);
 			socketChannel.register(selectorForWrite, SelectionKey.OP_WRITE);
-			startServerSocket();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -143,6 +145,9 @@ public class ResponseThread implements Runnable {
 			case Constant.SEND_MAIL:
 				handleSendMail(requestBody);
 				break;
+			case Constant.DOWNLOAD_ATTACHMENT:
+				handleDownloadAttachment(requestBody);
+				break;
 			case Constant.EXIT:
 				handleExit();
 			default:
@@ -186,7 +191,6 @@ public class ResponseThread implements Runnable {
 			} catch (IOException e) {
 				e.printStackTrace();
 			} finally {
-				threadAlive = false;
 				try {
 					oos.close();
 				} catch (IOException e) {
@@ -243,7 +247,8 @@ public class ResponseThread implements Runnable {
 	private void receiveAttachments(MailBean mail) {
 		//startServerSocket();
 		System.out.println("connected");
-		StringBuffer attachentFileLocations = new StringBuffer("");
+		StringBuffer attachmentNames = new StringBuffer();
+		StringBuffer attachmentLocations = new StringBuffer("");
 		String attachmentsCountString = receiveRequest();
 		int attachmentsCount = Integer.parseInt(attachmentsCountString);
 		sendResponse("OK");
@@ -251,6 +256,7 @@ public class ResponseThread implements Runnable {
 		for (int i = 0; i < attachmentsCount; i++) {
 			try {
 				String attachmentName = receiveRequest();
+				attachmentNames.append(attachmentName).append(Constant.ATTACHMENTS_SEPARATOR);
 				sendResponse("OK");
 				String fileLengthString = receiveRequest();
 				sendResponse("OK");
@@ -259,14 +265,15 @@ public class ResponseThread implements Runnable {
 				String attachmentLocation = receiveFile(mail, i, attachmentName, fileLength);
 				System.out.println("receiveFile() called once");
 				//TODO 
-				storeAttachment(i, attachmentName, attachmentLocation);
-				attachentFileLocations.append(attachmentLocation).append(Constant.ATTACHMENTS_SEPARATOR);
+				//storeAttachment(i, attachmentName, attachmentLocation);
+				attachmentLocations.append(attachmentLocation).append(Constant.ATTACHMENTS_SEPARATOR);
 				sendResponse("OK");
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
-		mail.setAttachmentNames(attachentFileLocations.toString());
+		mail.setAttachmentNames(attachmentNames.toString());
+		mail.setAttachmentLocations(attachmentLocations.toString());
 	}
 
 	private void storeAttachment(int i, String attachmentName, String attachmentLocation) {
@@ -284,7 +291,7 @@ public class ResponseThread implements Runnable {
 	}
 
 	private File makeFile(MailBean mail, int offset, String attachmentName) throws IOException {
-		String attachmentFolderName = Constant.LOCAL_ATTACHMENTS_ROOT_PATH + mail.getAddressee() + "/" + mail.getSendTime().toString().replace(":", "-") + "/" + mail.getSender() + "/" + offset;
+		String attachmentFolderName = Constant.LOCAL_ATTACHMENTS_ROOT_PATH_FOR_SERVER + mail.getAddressee() + "/" + mail.getSendTime().toString().replace(":", "-") + "/" + mail.getSender() + "/" + offset;
 		File attachmentFolder = new File(attachmentFolderName);
 		if (!attachmentFolder.exists()) {
 			attachmentFolder.mkdirs();
@@ -330,26 +337,53 @@ public class ResponseThread implements Runnable {
 		}
 	}
 
-	private void startServerSocket() {
-		try {
-			serverSocket = new ServerSocket(Constant.FILE_SERVER_PORT);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
 	private void getASocketFromClient() {
 		try {
-			client = serverSocket.accept();
+			client = fileserverSocket.accept();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		
 	}
 	
+	private void handleDownloadAttachment(String requestBody) {
+		//TODO
+		FileInputStream fis = null;
+		OutputStream os = null;
+		String[] params = requestBody.split(" ");
+		int mailID = Integer.parseInt(params[0]);
+		int offset = Integer.parseInt(params[1]);
+		out.println("download attachment: mail id-" + mailID + " offset-" + offset);
+		String filePath = dao.findAttachmentLocationByOffset(mailID, offset);
+		out.println("Attachment path: " + filePath);
+		try {
+			fis = new FileInputStream(new File(filePath));
+			int readSize;
+			long totalRead = 0;
+			this.getASocketFromClient();
+			os = client.getOutputStream();
+			byte[] buffer = new byte[1024];
+			while ((readSize = fis.read(buffer)) > 0) {
+				totalRead += readSize;
+				os.write(buffer, 0, readSize);
+				buffer = new byte[1024];
+			}
+			System.out.println("Send file finish.");
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				os.close();
+				fis.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
 	private void handleExit() throws IOException {
 		socketChannel.close();
-		serverSocket.close();
+		client.close();
 		threadAlive = false;
 	}
 

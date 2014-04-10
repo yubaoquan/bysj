@@ -69,36 +69,23 @@ public class DAO {
 		return null;
 	}
 	
-	public String findAttachmentLocationByID(int id) {
-		String result = null;
-		String sql = "select position from attachment where id = ?";
-		try (PreparedStatement stmt = conn.prepareStatement(sql);){
-			stmt.setInt(1, id);
-			rs = stmt.executeQuery();
-			if (rs.next()) {
-				result = rs.getString(1);
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return result;
-	}
-
 	public String findAttachmentLocationByOffset(int mailID, int offset) {
-		String result = null;
-		String sql = "select position from attachment where mail_id = ? and offset = ?";
+		String locations = null;
+		String resultLocation = null;
+		String sql = "select attachment_location from mail where id = ?";
 		
 		try (PreparedStatement stmt = conn.prepareStatement(sql)){
 			stmt.setInt(1,mailID);
-			stmt.setInt(2, offset);
 			rs = stmt.executeQuery();
 			if (rs.next()) {
-				result = rs.getString(1);
+				locations = rs.getString(1);
 			}
+			String[] locationArray = locations.split("\n");
+			resultLocation = locationArray[offset];
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return result;
+		return resultLocation;
 	}
 
 	public MailBean findMailDetail(int id) {
@@ -133,15 +120,16 @@ public class DAO {
 	}
 	
 	public void insertMailIntoMailbox(MailBean mail) {
-		String sql = "insert into mail (id, sender, addressee, sendtime, subject, content, attachments) "
-				+ "select max(id)+1, ?, ?, ?, ?, ?, ? from mail";
+		String sql = "insert into mail (sender, addressee, sendtime, subject, content, attachment_name, attachment_location) "
+				+ "values (?, ?, ?, ?, ?, ?, ?)";
 		try (PreparedStatement stmt = conn.prepareStatement(sql);){
 			stmt.setString(1, mail.getSender());
 			stmt.setString(2, mail.getAddressee());
 			stmt.setTimestamp(3, mail.getSendTime());
 			stmt.setString(4, mail.getSubject());
 			stmt.setString(5, mail.getContent());
-			stmt.setString(6, mail.getAttachments());
+			stmt.setString(6, mail.getAttachmentNames());
+			stmt.setString(7, mail.getAttachmentLocations());
 			stmt.executeUpdate();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -174,7 +162,8 @@ public class DAO {
 				mail.setSendTime(rs.getTimestamp("sendtime"));
 				mail.setSubject(rs.getString("subject"));
 				mail.setContent(rs.getString("content"));
-				mail.setAttachments(rs.getString("attachments"));
+				mail.setAttachmentNames(rs.getString("attachment_name"));
+				//mail.setAttachmentLocations(rs.getString("attachment_location"));
 				mails.add(mail);
 			}
 		} catch (Exception e) {

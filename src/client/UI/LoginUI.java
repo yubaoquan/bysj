@@ -2,10 +2,12 @@ package client.UI;
 
 import java.awt.*;
 import java.awt.event.*;
+
 import javax.swing.*;
 
 import beans.UserBean;
 import client.net.up.LoginFacade;
+import client.net.up.Transmitter;
 import client.thread.LoginThread;
 
 public class LoginUI {
@@ -13,10 +15,6 @@ public class LoginUI {
 		CONFIRM, REST
 	}
 
-	//public static final String INTERNET_LOGIN = "INTERNET_LOGIN";
-	//public static final String LOCAL_LOGIN = "LOCAL_LOGIN";
-	
-	//private String loginType = INTERNET_LOGIN;
 	public JFrame frame = new JFrame("邮件代理系统");
 	private JPanel centerPanel = new JPanel();
 	private JPanel southPanel = new JPanel();
@@ -43,6 +41,15 @@ public class LoginUI {
 	public LoginUIMonitor monitor = new LoginUIMonitor();
 
 	private UserBean loginInformation = new UserBean();
+	private Transmitter transmitter;
+
+	public Transmitter getTransmitter() {
+		return transmitter;
+	}
+
+	public void setTransmitter(Transmitter transmitter) {
+		this.transmitter = transmitter;
+	}
 
 	public void setLoginInformation(UserBean loginInformation) {
 		this.loginInformation = loginInformation;
@@ -141,7 +148,8 @@ public class LoginUI {
 			if (!informationValid()) {
 				return;
 			}
-			boolean loginSucceed = LoginFacade.loginToServer(loginInformation);
+			transmitter = new Transmitter(loginInformation);
+			boolean loginSucceed = transmitter.loginToServer();
 			if (loginSucceed) {
 				LoginFacade.selectSendOrReceive(LoginUI.this);
 			} else {
@@ -178,7 +186,7 @@ public class LoginUI {
 		userNameTextField.setText("");
 		passwordTextField.setText("");
 	}
-	
+
 	public String getSmtpServerNameFromSelector() {
 		String selection = (String) serverNameSelector.getSelectedItem();
 		if (selection.equals("")) {

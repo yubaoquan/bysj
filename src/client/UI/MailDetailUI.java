@@ -131,7 +131,7 @@ public class MailDetailUI extends JFrame {
 		addresseeTextField.setText(mail.getAddressee());
 		addresseeTextField.setEditable(false);
 
-		attachmentNameLabel.setText("附件: " + mail.getAttachments());
+		attachmentNameLabel.setText("附件: " + mail.getAttachmentNames());
 		if (mail.getAttachmentAmount() == 0) {
 			downloadAttachmentButton.setEnabled(false);
 		}

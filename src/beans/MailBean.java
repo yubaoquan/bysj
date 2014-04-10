@@ -36,84 +36,20 @@ public class MailBean implements Serializable, LabelBean{
 	private InternetAddress[] internetAddressees = new InternetAddress[10];
 	private ArrayList<AttachmentBean> attachmentBeans;
 
-	public ArrayList<AttachmentBean> getAttachmentBeans() {
-		return attachmentBeans;
-	}
-
-	public void setAttachmentBeans(ArrayList<AttachmentBean> attachmentBeans) {
-		this.attachmentBeans = attachmentBeans;
-	}
-
 	// the fields below are used for this system's own mail server
 	private String sender;
+
 	private String addressee;
+
 	private Timestamp sendTime;
 	private File[] attachmentsForLocalServer = new File[ATTACHMENTS_CAPACITY];
-	private String attachments;
+	private String attachmentNames;
+	private String attachmentLocations;
 	private int id;
-
-	@Override
-	public int getID() {
-		return id;
-	}
-
-	public void setId(int id) {
-		this.id = id;
-	}
 
 	public MailBean() {
 		this.multipart = new MimeMultipart();
 	}
-
-	public Multipart getMutipart() {
-		return multipart;
-	}
-
-	public void setMutipary(Multipart mutipary) {
-		this.multipart = mutipary;
-	}
-
-	public MimeBodyPart[] getExtraItems() {
-		return attachmentsForInternetServer;
-	}
-
-	public void setExtraItems(MimeBodyPart[] extraItems) {
-		this.attachmentsForInternetServer = extraItems;
-	}
-
-	public String getText() {
-		return text;
-	}
-
-	public String getContent() {
-		return text;
-	}
-
-	public void setContent(String content) {
-		setText(content);
-	}
-	
-	public void setText(String text) {
-		this.text = text;
-	}
-
-	public InternetAddress[] getInternetAddressees() {
-		return internetAddressees;
-	}
-
-	public void setInternetAddressees(InternetAddress[] receiverAddresses) {
-		this.internetAddressees = receiverAddresses;
-	}
-
-	@Override
-	public String getSubject() {
-		return subject;
-	}
-
-	public void setSubject(String subject) {
-		this.subject = subject;
-	}
-
 	public void addAttachment(File attachment, int mailType) {
 		if (attachmentsAreFull()) {
 			return;
@@ -126,10 +62,6 @@ public class MailBean implements Serializable, LabelBean{
 		this.attachmentCounter++;
 	}
 
-	public boolean attachmentsAreFull() {
-		return this.attachmentCounter >= ATTACHMENTS_CAPACITY;
-	}
-	
 	private void addAttachmentForInternetServer(File attachment) {
 		try {
 			attachmentsForInternetServer[attachmentCounter] = new MimeBodyPart();
@@ -146,6 +78,82 @@ public class MailBean implements Serializable, LabelBean{
 		attachmentsForLocalServer[attachmentCounter] = attachment;
 		System.out.println("Add attachment for local server");
 	}
+
+	public void addAttachmentsToMultipart() {
+		for (int i = 0; i < attachmentCounter; i++) {
+			try {
+				multipart.addBodyPart(attachmentsForInternetServer[i]);
+			} catch (MessagingException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public boolean attachmentsAreFull() {
+		return this.attachmentCounter >= ATTACHMENTS_CAPACITY;
+	}
+
+	public String getAddressee() {
+		return addressee;
+	}
+
+	public File getAttachment(int offset) {
+		return attachmentsForLocalServer[offset];
+	}
+
+	public int getAttachmentAmount() {
+		return attachmentCounter;
+	}
+
+	public ArrayList<AttachmentBean> getAttachmentBeans() {
+		return attachmentBeans;
+	}
+
+	public String getAttachmentLocations() {
+		return attachmentLocations;
+	}
+
+	public String getAttachmentNames() {
+		return attachmentNames;
+	}
+
+	public String getContent() {
+		return text;
+	}
+
+	public MimeBodyPart[] getExtraItems() {
+		return attachmentsForInternetServer;
+	}
+	
+	@Override
+	public int getID() {
+		return id;
+	}
+
+	public InternetAddress[] getInternetAddressees() {
+		return internetAddressees;
+	}
+
+	public Multipart getMutipart() {
+		return multipart;
+	}
+
+	public String getSender() {
+		return sender;
+	}
+
+	public Timestamp getSendTime() {
+		return sendTime;
+	}
+
+	@Override
+	public String getSubject() {
+		return subject;
+	}
+
+	public String getText() {
+		return text;
+	}
 	
 	private void initMIMEBodyPart(MimeBodyPart mbp, File file) throws IOException, MessagingException {
 		mbp.setText("text");// 没有这一句的话,发送的附件会显示成一堆文本.
@@ -159,53 +167,63 @@ public class MailBean implements Serializable, LabelBean{
 		attachmentsForLocalServer = new File[ATTACHMENTS_CAPACITY];
 		attachmentCounter = 0;
 	}
-
-	public int getAttachmentAmount() {
-		return attachmentCounter;
+	
+	public void setAddressee(String addressee) {
+		this.addressee = addressee;
 	}
 
 	public void setAttachmentAmount(int num) {
 		attachmentCounter = num;
 	}
-	
-	public void addAttachmentsToMultipart() {
-		for (int i = 0; i < attachmentCounter; i++) {
-			try {
-				multipart.addBodyPart(attachmentsForInternetServer[i]);
-			} catch (MessagingException e) {
-				e.printStackTrace();
-			}
-		}
+
+	public void setAttachmentBeans(ArrayList<AttachmentBean> attachmentBeans) {
+		this.attachmentBeans = attachmentBeans;
 	}
 
-	public String getSender() {
-		return sender;
+	public void setAttachmentLocations(String attachmentLocations) {
+		this.attachmentLocations = attachmentLocations;
+	}
+	
+	public void setAttachmentNames(String names) {
+		this.attachmentNames = names;
+	}
+
+	public void setContent(String content) {
+		setText(content);
+	}
+
+	public void setExtraItems(MimeBodyPart[] extraItems) {
+		this.attachmentsForInternetServer = extraItems;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public void setInternetAddressees(InternetAddress[] receiverAddresses) {
+		this.internetAddressees = receiverAddresses;
+	}
+
+	public void setMutipary(Multipart mutipary) {
+		this.multipart = mutipary;
 	}
 
 	public void setSender(String sender) {
 		this.sender = sender;
 	}
 
-	public String getAddressee() {
-		return addressee;
-	}
-
-	public void setAddressee(String addressee) {
-		this.addressee = addressee;
-	}
-
-	public Timestamp getSendTime() {
-		return sendTime;
-	}
-
 	public void setSendTime(Timestamp sendTime) {
 		this.sendTime = sendTime;
 	}
-
-	public File getAttachment(int offset) {
-		return attachmentsForLocalServer[offset];
-	}
 	
+	public void setSubject(String subject) {
+		this.subject = subject;
+	}
+
+	public void setText(String text) {
+		this.text = text;
+	}
+
 	public void showPropertiesForLocalServer() {
 		Util.println("id: " + this.getID());
 		Util.println("sender: " + this.getSender());
@@ -213,17 +231,6 @@ public class MailBean implements Serializable, LabelBean{
 		Util.println("subject: " + this.getSubject());
 		Util.println("sender: " + this.getSender());
 		Util.println("content: " + this.getText());
-		/*Util.println("attachment 1 : " + this.getAttachment1Name());
-		Util.println("attachment 2 : " + this.getAttachment2Name());
-		Util.println("attachment 3 : " + this.getAttachment3Name());*/
 
-	}
-
-	public String getAttachments() {
-		return attachments;
-	}
-
-	public void setAttachmentNames(String attachments) {
-		this.attachments = attachments;
 	}
 }

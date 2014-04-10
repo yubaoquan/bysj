@@ -18,10 +18,11 @@ public class LoginFacade {
 		return true;
 	}
 
-	public static void selectSendOrReceive(LoginUI parentUI) {
-		parentUI.dispose();
-		UserBean li = parentUI.getLoginInformation();
-		new MainTargetSelectingUI(li).initUI();
+	public static void selectSendOrReceive(LoginUI parent) {
+		parent.dispose();
+		UserBean user = parent.getLoginInformation();
+		Transmitter tra = parent.getTransmitter();
+		new MainTargetSelectingUI(user, tra).initUI();
 	}
 
 	public static boolean loginToServer(UserBean li) {
