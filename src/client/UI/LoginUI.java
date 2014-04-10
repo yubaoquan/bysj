@@ -1,5 +1,6 @@
 package client.UI;
 
+import static java.lang.System.out;
 import java.awt.*;
 import java.awt.event.*;
 
@@ -22,7 +23,7 @@ public class LoginUI {
 	private BorderLayout frameLayout = new BorderLayout();
 	private GridLayout centerLayout = new GridLayout(3, 1);
 	private FlowLayout dataLayout = new FlowLayout();
-	private GridLayout southLayout = new GridLayout(1, 2);
+	private GridLayout southLayout = new GridLayout(1, 3);
 
 	private JLabel serverNameLabel = new JLabel("server name:");
 	private JLabel userNameLabel = new JLabel("user name:");
@@ -32,6 +33,7 @@ public class LoginUI {
 	public JTextField userNameTextField = new JTextField(20);
 	public JPasswordField passwordTextField = new JPasswordField(20);
 
+	private JButton registerButton = new JButton("register");
 	private JButton confirmButton = new JButton("login");
 	private JButton resetButton = new JButton("reset");
 
@@ -94,6 +96,7 @@ public class LoginUI {
 		serverNameSelector.addItem("163");
 		serverNameSelector.addItem("QQ");
 		serverNameSelector.addItem("box");
+		registerButton.setActionCommand(Constant.REGISTER);
 		confirmButton.setActionCommand(Constant.CONFIRM);
 		resetButton.setActionCommand(Constant.RESET);
 	}
@@ -106,6 +109,7 @@ public class LoginUI {
 		passwordPanel.add(passwordLabel);
 		passwordPanel.add(passwordTextField);
 
+		registerButton.addActionListener(monitor);
 		confirmButton.addActionListener(monitor);
 		resetButton.addActionListener(monitor);
 
@@ -113,6 +117,7 @@ public class LoginUI {
 		centerPanel.add(userNamePanel);
 		centerPanel.add(passwordPanel);
 
+		southPanel.add(registerButton);
 		southPanel.add(confirmButton);
 		southPanel.add(resetButton);
 
@@ -120,11 +125,14 @@ public class LoginUI {
 		frame.add(southPanel, BorderLayout.SOUTH);
 	}
 
-	public class LoginUIMonitor implements ActionListener {
+	private class LoginUIMonitor implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			String command = e.getActionCommand();
 			switch (command) {
+				case Constant.REGISTER:
+					onRegisterButtonClick();
+					break;
 				case Constant.CONFIRM:
 					onConfirmButtonClick();
 					break;
@@ -134,6 +142,11 @@ public class LoginUI {
 				default:
 					System.exit(-1);
 			}
+		}
+
+		private void onRegisterButtonClick() {
+			out.println("注册新用户！");
+			new RegisterUI();
 		}
 
 		private void onResetButtonClick() {

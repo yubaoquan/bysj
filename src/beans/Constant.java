@@ -1,6 +1,7 @@
 package beans;
 
 public class Constant {
+	public static final String REGISTER = "RIGISTER";
 	public static final String CONFIRM = "CONFIRM";
 	public static final String RESET = "RESET";
 	
