@@ -13,7 +13,6 @@ import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
-import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -34,10 +33,8 @@ public class Transmitter {
 	private Properties props;
 	private Session session;
 	private Transport transport = null;
-	private static final int PORT = 25;
 	private boolean loginSucceed = false;
 	private UserBean user = null;
-	private static Transmitter transmitter = null;
 	private boolean sendSucceed = false;
 	private MimeMessage msg;
 	private Selector initSelector = null;
@@ -47,13 +44,6 @@ public class Transmitter {
 	private ByteBuffer buffer = null;
 	private Socket socket = null;
 	private OutputStream os = null;
-
-	public static Transmitter getInstance(UserBean user) {
-		if (Transmitter.transmitter == null) {
-			transmitter = new Transmitter(user);
-		}
-		return transmitter;
-	}
 
 	public Transmitter(UserBean user) {
 		this.user = user;
@@ -310,6 +300,7 @@ public class Transmitter {
 		}
 	}
 
+	@SuppressWarnings("unused")
 	private void sendFile(File file) throws AssertionError {
 		PrintStream ps = null;
 		

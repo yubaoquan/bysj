@@ -25,7 +25,6 @@ import java.util.Set;
 import server.DAO.DAO;
 import server.DAO.DAOFactory;
 import util.Util;
-import beans.AttachmentBean;
 import beans.Constant;
 import beans.LocalMailBean;
 import beans.MailBean;
@@ -264,8 +263,6 @@ public class ResponseThread implements Runnable {
 				long fileLength = Long.parseLong(fileLengthString);
 				String attachmentLocation = receiveFile(mail, i, attachmentName, fileLength);
 				System.out.println("receiveFile() called once");
-				//TODO 
-				//storeAttachment(i, attachmentName, attachmentLocation);
 				attachmentLocations.append(attachmentLocation).append(Constant.ATTACHMENTS_SEPARATOR);
 				sendResponse("OK");
 			} catch (Exception e) {
@@ -274,14 +271,6 @@ public class ResponseThread implements Runnable {
 		}
 		mail.setAttachmentNames(attachmentNames.toString());
 		mail.setAttachmentLocations(attachmentLocations.toString());
-	}
-
-	private void storeAttachment(int i, String attachmentName, String attachmentLocation) {
-		AttachmentBean ab = new AttachmentBean();
-		ab.setOffset(i);
-		ab.setTitle(attachmentName);
-		ab.setLocation(attachmentLocation);
-		dao.insertAttachment(ab);
 	}
 
 	private String receiveFile(MailBean mail, int offset, String attachmentName, long fileLength) throws IOException, FileNotFoundException {
@@ -317,6 +306,7 @@ public class ResponseThread implements Runnable {
 			fos = new FileOutputStream(attachment);
 			byte[] buffer = new byte[1024];
 			int readSize = 0;
+			@SuppressWarnings("unused")
 			int totalRead = 0;
 			System.out.println("here1");
 			while ((readSize = is.read(buffer)) > 0) {
@@ -359,6 +349,7 @@ public class ResponseThread implements Runnable {
 		try {
 			fis = new FileInputStream(new File(filePath));
 			int readSize;
+			@SuppressWarnings("unused")
 			long totalRead = 0;
 			this.getASocketFromClient();
 			os = client.getOutputStream();

@@ -37,18 +37,24 @@ public class Server {
 			serverSocketChannel.socket().bind(new InetSocketAddress(10000));
 
 			/*
-			 * Register accepts on the server socket with the selector. This step tells the selector that the socket wants to be put on the ready list when accept operations occur, so allowing multiplexed non-blocking I/O to take place.
+			 * Register accepts on the server socket with the selector. This
+			 * step tells the selector that the socket wants to be put on the
+			 * ready list when accept operations occur, so allowing multiplexed
+			 * non-blocking I/O to take place.
 			 */
 			serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
 
 			/*
-			 * Here's where everything happens. The select method will return when any operations registered above have occurred, the thread has been interrupted, etc.
+			 * Here's where everything happens. The select method will return
+			 * when any operations registered above have occurred, the thread
+			 * has been interrupted, etc.
 			 */
 			while (selector.select() > 0) {
 				// Someone is ready for I/O, get the ready keys
 				Iterator<SelectionKey> it = selector.selectedKeys().iterator();
 
-				// Walk through the ready keys collection and process date requests.
+				// Walk through the ready keys collection and process date
+				// requests.
 				while (it.hasNext()) {
 					SelectionKey readyKey = it.next();
 					it.remove();
@@ -99,14 +105,12 @@ public class Server {
 			channel = fos.getChannel();
 			ByteBuffer buffer = ByteBuffer.allocateDirect(1024);
 
+			@SuppressWarnings("unused")
 			int size = 0;
 			while ((size = socketChannel.read(buffer)) != -1) {
 				buffer.flip();
-				//if (size > 0) {
-					//buffer.limit(size);
-					channel.write(buffer);
-					buffer.clear();
-				//}
+				channel.write(buffer);
+				buffer.clear();
 			}
 		} finally {
 			try {
@@ -131,8 +135,8 @@ public class Server {
 			ByteBuffer buffer = ByteBuffer.allocateDirect(1024);
 			int size = 0;
 			while ((size = channel.read(buffer)) != -1) {
-				buffer.flip();//rewind
-				//buffer.limit(size);
+				buffer.flip();// rewind
+				// buffer.limit(size);
 				socketChannel.write(buffer);
 				buffer.clear();
 			}

@@ -47,6 +47,7 @@ public class Client {
 				fis = new FileInputStream(file);
 				channel = fis.getChannel();
 				ByteBuffer buffer = ByteBuffer.allocateDirect(1024);
+				@SuppressWarnings("unused")
 				int size = 0;
 				while ((size = channel.read(buffer)) != -1) {
 					buffer.flip();
@@ -77,6 +78,7 @@ public class Client {
 				channel = fos.getChannel();
 				ByteBuffer buffer = ByteBuffer.allocateDirect(1024);
 
+				@SuppressWarnings("unused")
 				int size = 0;
 				while ((size = socketChannel.read(buffer)) != -1) {
 					buffer.flip();

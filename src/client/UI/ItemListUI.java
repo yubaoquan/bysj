@@ -15,7 +15,6 @@ import javax.swing.JPanel;
 
 import util.Util;
 import beans.AttachmentBean;
-import beans.LabelBean;
 import beans.MailBean;
 import client.net.down.ReceiveMail;
 
@@ -47,7 +46,6 @@ public class ItemListUI extends JFrame {
 		this.receiveMail = parent;
 	}
 
-	private List<LabelBean> labelBeans;
 	private List<URLLabel> labels = new ArrayList<>();
 	private int labelCount = 0;
 	private int currentPage = 0;
@@ -62,14 +60,15 @@ public class ItemListUI extends JFrame {
 		setLayouts();
 	}
 
+	@SuppressWarnings("rawtypes")
 	public ItemListUI(List items, ReceiveMail parent) {
 		this(items, URLLabel.FOR_MAIL);
 		this.receiveMail = parent;
 	}
 
+	@SuppressWarnings("rawtypes")
 	public ItemListUI(List items, int type) {
 		this();
-		this.labelBeans = items;
 		switch (type) {
 			case URLLabel.FOR_MAIL:
 				this.setTitle("邮件列表");

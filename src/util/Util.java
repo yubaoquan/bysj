@@ -5,10 +5,14 @@ import java.util.List;
 
 import javax.mail.MessagingException;
 
+import client.UI.LoginUI;
+import client.UI.MainTargetSelectingUI;
 import client.net.down.ReceiveMail;
+import client.net.up.Transmitter;
 import beans.AttachmentBean;
 import beans.LocalMailBean;
 import beans.MailBean;
+import beans.UserBean;
 
 public class Util {
 	public static void println(Object obj) {
@@ -86,4 +90,27 @@ public class Util {
 		subjectName = subjectName.length() < subjectNameLength ? subjectName : subjectName.substring(0, subjectNameLength);
 		return subjectName;
 	}
+	
+
+	public static boolean loginInformationValid(UserBean loginInformation) {
+		if (loginInformation == null) {
+			System.out.println("loginInformation == null");
+			return false;
+		}
+		if (loginInformation.getUserName().trim().equals("")) {
+			return false;
+		}
+		if (loginInformation.getPassword().trim().equals("")) {
+			return false;
+		}
+		return true;
+	}
+
+	public static void selectSendOrReceive(LoginUI parent) {
+		parent.dispose();
+		UserBean user = parent.getLoginInformation();
+		Transmitter tra = parent.getTransmitter();
+		new MainTargetSelectingUI(user, tra).initUI();
+	}
+
 }

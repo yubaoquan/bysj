@@ -29,6 +29,7 @@ public class LoginThread extends Thread {
 	}
 
 	//This method is for test.
+	@SuppressWarnings("unused")
 	private static LoginUI methodForTest(boolean localTest) {
 		LoginUI loginUI = new LoginUI();
 		UserBean li = new UserBean();

@@ -1,9 +1,9 @@
 package beans;
 
-import java.io.File;
-
 public class Constant {
-
+	public static final String CONFIRM = "CONFIRM";
+	public static final String RESET = "RESET";
+	
 	public static final int USER_AUTHENTICATION = 0;
     public static final int LIST_MAILS = 1;
     public static final int MAIL_DETAIL = 2;

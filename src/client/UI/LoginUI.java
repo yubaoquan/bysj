@@ -5,15 +5,12 @@ import java.awt.event.*;
 
 import javax.swing.*;
 
+import util.Util;
+import beans.Constant;
 import beans.UserBean;
-import client.net.up.LoginFacade;
 import client.net.up.Transmitter;
-import client.thread.LoginThread;
 
 public class LoginUI {
-	public static enum LoginCommandCode {
-		CONFIRM, REST
-	}
 
 	public JFrame frame = new JFrame("邮件代理系统");
 	private JPanel centerPanel = new JPanel();
@@ -97,8 +94,8 @@ public class LoginUI {
 		serverNameSelector.addItem("163");
 		serverNameSelector.addItem("QQ");
 		serverNameSelector.addItem("box");
-		confirmButton.setActionCommand(LoginCommandCode.CONFIRM.toString());
-		resetButton.setActionCommand(LoginCommandCode.REST.toString());
+		confirmButton.setActionCommand(Constant.CONFIRM);
+		resetButton.setActionCommand(Constant.RESET);
 	}
 
 	private void addComponents() {
@@ -126,12 +123,12 @@ public class LoginUI {
 	public class LoginUIMonitor implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			LoginCommandCode commandCode = LoginCommandCode.valueOf(e.getActionCommand());
-			switch (commandCode) {
-				case CONFIRM:
+			String command = e.getActionCommand();
+			switch (command) {
+				case Constant.CONFIRM:
 					onConfirmButtonClick();
 					break;
-				case REST:
+				case Constant.RESET:
 					onResetButtonClick();
 					break;
 				default:
@@ -151,7 +148,7 @@ public class LoginUI {
 			transmitter = new Transmitter(loginInformation);
 			boolean loginSucceed = transmitter.loginToServer();
 			if (loginSucceed) {
-				LoginFacade.selectSendOrReceive(LoginUI.this);
+				Util.selectSendOrReceive(LoginUI.this);
 			} else {
 				JOptionPane.showMessageDialog(frame, (String) "登录失败.请确认用户名和密码填写正确并且网络连接正常.", "错误", JOptionPane.WARNING_MESSAGE);
 			}
@@ -162,7 +159,7 @@ public class LoginUI {
 				JOptionPane.showMessageDialog(frame, (String) "请选择邮件服务器.", "错误", JOptionPane.WARNING_MESSAGE);
 				return false;
 			}
-			if (!LoginFacade.loginInformationValid(loginInformation)) {
+			if (!Util.loginInformationValid(loginInformation)) {
 				JOptionPane.showMessageDialog(frame, (String) "用户名和密码不能为空,请检查后重新输入.", "错误", JOptionPane.WARNING_MESSAGE);
 				return false;
 			}

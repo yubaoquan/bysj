@@ -1,18 +1,8 @@
 package beans;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
 import java.sql.Timestamp;
-
-import javax.activation.DataHandler;
-import javax.activation.FileDataSource;
-import javax.mail.MessagingException;
-import javax.mail.Multipart;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMultipart;
-import javax.mail.internet.MimeUtility;
 
 import util.Util;
 

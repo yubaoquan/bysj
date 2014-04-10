@@ -247,6 +247,7 @@ public class ReceiveMail {
 		try {
 			socket = new Socket("127.0.0.1", Constant.FILE_SERVER_PORT);
 			ois = new ObjectInputStream(socket.getInputStream());
+			@SuppressWarnings("unchecked")
 			ArrayList<LocalMailBean> localMails = (ArrayList<LocalMailBean>) ois.readObject();
 			ArrayList<MailBean> mails = (ArrayList<MailBean>) Util.convertLocalMaisToMails(localMails, this);
 			new ItemListUI(mails, this).launch();

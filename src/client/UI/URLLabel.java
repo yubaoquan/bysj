@@ -6,21 +6,14 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.io.File;
-import java.io.InputStream;
 
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 
-import util.Util;
 import beans.AttachmentBean;
 import beans.LabelBean;
 import beans.MailBean;
-import beans.UserBean;
-import client.io.FileStreamSaver;
-import client.net.down.ReceiveMail;
-import client.net.up.Transmitter;
 
+@SuppressWarnings("unused")
 public class URLLabel extends JLabel implements MouseListener {
 
 	public static final int FOR_MAIL = 0;

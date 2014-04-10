@@ -23,10 +23,12 @@ import java.util.logging.Logger;
  */
 public class Server {
 
+	@SuppressWarnings("unused")
 	private boolean started = false;
 	private ServerSocket fileServerSocket;
 	private static Selector selector = null;
 	private static ServerSocketChannel serverSocketChannel = null;
+	@SuppressWarnings("unused")
 	private final static Logger logger = Logger.getLogger(Server.class.getName());
 
 	public static void main(String[] args) {
