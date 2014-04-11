@@ -135,6 +135,12 @@ public class ResponseThread implements Runnable {
 		Util.println("operation code: " + operationCode);
 		String requestBody = request.substring(index + 1);
 		switch (operationCode) {
+			case Constant.FIND_USER_NAME:
+				handleFindUser(requestBody);
+				break;
+			case Constant.ADD_NEW_USER:
+				handleAddNewUser(requestBody);
+				break;
 			case Constant.USER_AUTHENTICATION:
 				handleUserLogin(requestBody);
 				break;
@@ -154,6 +160,37 @@ public class ResponseThread implements Runnable {
 		}
 	}
 
+	private void handleFindUser(String requestBody) {
+		String username = requestBody;
+		out.println("Username: " + username);
+		if (dao.userExists(username)) {
+			sendResponse(String.valueOf(Constant.FOUND));
+		} else {
+			sendResponse(String.valueOf(Constant.NOT_FOUND));
+		}
+		
+	}
+
+	private void handleAddNewUser(String requestBody) {
+		int index = requestBody.indexOf(" ");
+		String usernameLengthString = requestBody.substring(0, index);
+		int usernameLength = Integer.parseInt(usernameLengthString);
+		out.println("user name length: " + usernameLength);
+		requestBody = requestBody.substring(index + 1);
+		String username = requestBody.substring(0, usernameLength);
+		String password = requestBody.substring(usernameLength);
+		out.println("user name: " + username);
+		out.println("password: " + password);
+		
+		if (dao.userExists(username)) {
+			sendResponse(Constant.FAILED + "");
+		} else {
+			dao.insertNewUser(username, password);
+			sendResponse(Constant.SUCCEED + "");
+		}
+		
+	}
+	
 	private void handleUserLogin(String params) {
 		Util.println("check username and password");
 		String[] array = params.split(" ");
@@ -374,7 +411,9 @@ public class ResponseThread implements Runnable {
 	
 	private void handleExit() throws IOException {
 		socketChannel.close();
-		client.close();
+		if (client != null) {
+			client.close();
+		}
 		threadAlive = false;
 	}
 

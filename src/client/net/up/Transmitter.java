@@ -45,6 +45,14 @@ public class Transmitter {
 	private Socket socket = null;
 	private OutputStream os = null;
 
+	public Transmitter() {
+		try {
+			initConnect();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public Transmitter(UserBean user) {
 		this.user = user;
 		props = new Properties();
@@ -53,8 +61,9 @@ public class Transmitter {
 		session = Session.getDefaultInstance(props);
 		msg = new MimeMessage(session);
 		try {
+			initConnect();
 			transport = session.getTransport();
-		} catch (NoSuchProviderException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -92,36 +101,13 @@ public class Transmitter {
 
 	private boolean loginToLocalServer() {
 		boolean loginSucceed = false;
-		try {
-			initConnect();
-			Set<SelectionKey> selectionKeys = initSelector.selectedKeys();
-			Iterator<SelectionKey> it = selectionKeys.iterator();
-			if (it.hasNext()) {
-				SelectionKey selectionKey = it.next();
-				if (selectionKey.isConnectable()) {
-					Util.println("client connect");
-					socketChannel = (SocketChannel) selectionKey.channel();
-					// 判断此通道上是否正在进行连接操作。
-					// 完成套接字通道的连接过程。
-					if (socketChannel.isConnectionPending()) {
-						socketChannel.finishConnect();
-						System.out.println("完成连接!");
-						initReadAndWriteSelector();
+		String requestString = Constant.USER_AUTHENTICATION + " " + user.getUserName().trim() + " " + user.getPassword().trim();
+		sendRequest(requestString);
 
-						String requestString = Constant.USER_AUTHENTICATION + " " + user.getUserName().trim() + " " + user.getPassword().trim();
-						sendRequest(requestString);
-
-						System.out.println("send finished!");
-						String responseString = receiveResponse();
-						if (responseString.equals(Constant.LOGIN_SUCCEED)) {
-							loginSucceed = true;
-						}
-					}
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			return false;
+		System.out.println("send finished!");
+		String responseString = receiveResponse();
+		if (responseString.equals(Constant.LOGIN_SUCCEED)) {
+			loginSucceed = true;
 		}
 		return loginSucceed;
 	}
@@ -135,6 +121,23 @@ public class Transmitter {
 
 		socketChannel.connect(socketAddress);
 		initSelector.select();
+		
+		Set<SelectionKey> selectionKeys = initSelector.selectedKeys();
+		Iterator<SelectionKey> it = selectionKeys.iterator();
+		if (it.hasNext()) {
+			SelectionKey selectionKey = it.next();
+			if (selectionKey.isConnectable()) {
+				Util.println("client connect");
+				socketChannel = (SocketChannel) selectionKey.channel();
+				// 判断此通道上是否正在进行连接操作。
+				// 完成套接字通道的连接过程。
+				if (socketChannel.isConnectionPending()) {
+					socketChannel.finishConnect();
+					System.out.println("完成连接!");
+					initReadAndWriteSelector();
+				}
+			}
+		}
 	}
 
 	private void initReadAndWriteSelector() throws IOException {

@@ -142,7 +142,6 @@ public class DAO {
 			stmt.setString(1,username);
 			stmt.setString(2, password);
 			stmt.executeUpdate();
-			conn.commit();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

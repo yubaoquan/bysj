@@ -146,7 +146,7 @@ public class LoginUI {
 
 		private void onRegisterButtonClick() {
 			out.println("注册新用户！");
-			new RegisterUI();
+			new RegisterUI(LoginUI.this);
 		}
 
 		private void onResetButtonClick() {
@@ -168,7 +168,7 @@ public class LoginUI {
 		}
 
 		private boolean informationValid() {
-			if (serverNameSelector.getSelectedIndex() == 0) {
+			if (serverNameSelector.getSelectedIndex() == Constant.NULL_INDEX) {
 				JOptionPane.showMessageDialog(frame, (String) "请选择邮件服务器.", "错误", JOptionPane.WARNING_MESSAGE);
 				return false;
 			}
@@ -181,7 +181,7 @@ public class LoginUI {
 	}
 
 	private void fillLoginInformation() {
-		if (((String) serverNameSelector.getSelectedItem()).equalsIgnoreCase("box")) {
+		if (serverNameSelector.getSelectedIndex() == Constant.BOX_INDEX) {
 			loginInformation.setLocalServerEnabled(true);
 		} else {
 			loginInformation.setSmtpServerName(getSmtpServerNameFromSelector());
@@ -192,7 +192,7 @@ public class LoginUI {
 	}
 
 	public void cleanTextField() {
-		serverNameSelector.setSelectedIndex(0);
+		serverNameSelector.setSelectedIndex(Constant.NULL_INDEX);
 		userNameTextField.setText("");
 		passwordTextField.setText("");
 	}
@@ -229,5 +229,9 @@ public class LoginUI {
 
 	public UserBean getLoginInformation() {
 		return loginInformation;
+	}
+	
+	public static void main(String[] args) {
+		new LoginUI().initUI();;
 	}
 }
