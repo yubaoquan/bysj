@@ -18,30 +18,25 @@ import util.Util;
 
 public class MailBean implements Serializable, LabelBean{
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
-	public static final int FOR_INTERNET_SERVER = 0;
-	public static final int FOR_LOCAL_SERVER = 1;
-	public final int ATTACHMENTS_CAPACITY = 3;
 	
-	// this fields below are used for mail servers on the internet
-	private Multipart multipart;
+	
+	//common fields 
 	private int attachmentCounter = 0;
-	private MimeBodyPart[] attachmentsForInternetServer = new MimeBodyPart[ATTACHMENTS_CAPACITY];
 	private String subject;
 	private String text;
+	
+	// the fields below are used for mail servers on the internet
+	private Multipart multipart;
+	private MimeBodyPart[] attachmentsForInternetServer = new MimeBodyPart[Constant.ATTACHMENTS_CAPACITY];
 	private InternetAddress[] internetAddressees = new InternetAddress[10];
 	private ArrayList<AttachmentBean> attachmentBeans;
 
 	// the fields below are used for this system's own mail server
 	private String sender;
-
 	private String addressee;
-
 	private Timestamp sendTime;
-	private File[] attachmentsForLocalServer = new File[ATTACHMENTS_CAPACITY];
+	private File[] attachmentsForLocalServer = new File[Constant.ATTACHMENTS_CAPACITY];
 	private String attachmentNames;
 	private String attachmentLocations;
 	private int id;
@@ -53,9 +48,9 @@ public class MailBean implements Serializable, LabelBean{
 		if (attachmentsAreFull()) {
 			return;
 		}
-		if (mailType == FOR_INTERNET_SERVER) {
+		if (mailType == Constant.FOR_INTERNET_SERVER) {
 			addAttachmentForInternetServer(attachment);
-		} else if (mailType == FOR_LOCAL_SERVER) {
+		} else if (mailType == Constant.FOR_LOCAL_SERVER) {
 			addAttachmentForLocalServer(attachment);
 		}
 		this.attachmentCounter++;
@@ -89,7 +84,7 @@ public class MailBean implements Serializable, LabelBean{
 	}
 
 	public boolean attachmentsAreFull() {
-		return this.attachmentCounter >= ATTACHMENTS_CAPACITY;
+		return this.attachmentCounter >= Constant.ATTACHMENTS_CAPACITY;
 	}
 
 	public String getAddressee() {
@@ -162,8 +157,8 @@ public class MailBean implements Serializable, LabelBean{
 	}
 
 	public void removeAllExtraItems() {
-		attachmentsForInternetServer = new MimeBodyPart[ATTACHMENTS_CAPACITY];
-		attachmentsForLocalServer = new File[ATTACHMENTS_CAPACITY];
+		attachmentsForInternetServer = new MimeBodyPart[Constant.ATTACHMENTS_CAPACITY];
+		attachmentsForLocalServer = new File[Constant.ATTACHMENTS_CAPACITY];
 		attachmentCounter = 0;
 	}
 	

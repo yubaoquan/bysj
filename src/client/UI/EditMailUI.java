@@ -21,6 +21,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.MatteBorder;
 
+import beans.Constant;
 import beans.MailBean;
 import beans.UserBean;
 import client.net.up.Transmitter;
@@ -217,9 +218,9 @@ public class EditMailUI {
 				System.out.println(attachment.getName());
 				changeAttachmentLabel(attachment.getName());
 				if (user.isLocalServerEnabled()) {
-					mail.addAttachment(attachment, MailBean.FOR_LOCAL_SERVER);
+					mail.addAttachment(attachment, Constant.FOR_LOCAL_SERVER);
 				} else {
-					mail.addAttachment(attachment, MailBean.FOR_INTERNET_SERVER);
+					mail.addAttachment(attachment, Constant.FOR_INTERNET_SERVER);
 				}
 				if (mail.attachmentsAreFull()) {
 					addExtraItemButton.setEnabled(false);
@@ -296,14 +297,12 @@ public class EditMailUI {
 	}
 
 	private void fillMailForLocalServer() {
-		// TODO Auto-generated method stub
 		System.out.println("Fill mail for local server");
 		mail.setSender(user.getUserName());
 		mail.setAddressee(addresseeTextField.getText());
 	}
 
 	private void fillMailForInternetServer() throws AddressException {
-		// TODO Auto-generated method stub
 		System.out.println("Fill mail for Internet server");
 		fillMailAddressees();
 		if (mail.getAttachmentAmount() > 0) {
@@ -323,7 +322,7 @@ public class EditMailUI {
 		int shortNameLength = attachmentName.length() > 10 ? 10 : attachmentName.length();
 		String shortFileName = attachmentName.substring(0, shortNameLength) + ".., ";
 
-		if (mail.getAttachmentAmount() == mail.ATTACHMENTS_CAPACITY - 1) {
+		if (mail.getAttachmentAmount() == Constant.ATTACHMENTS_CAPACITY - 1) {
 			shortFileName = shortFileName.substring(0, shortFileName.length() - 1);
 		}
 		text.append(shortFileName);

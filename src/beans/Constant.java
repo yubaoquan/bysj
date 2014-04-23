@@ -19,6 +19,10 @@ public class Constant {
     public static final int QQ_INDEX = 2;
     public static final int BOX_INDEX = 3;
     
+    public static final int FOR_INTERNET_SERVER = 0;
+	public static final int FOR_LOCAL_SERVER = 1;
+	public static final int ATTACHMENTS_CAPACITY = 3;
+    
     public static final String LOGIN_SUCCEED = "LOGIN_SUCCEED";
     public static final String LOGIN_FAILED = "LOGIN_FAILED";
     public static final String SERVER_HOSTNAME = "localhost";

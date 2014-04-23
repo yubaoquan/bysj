@@ -8,13 +8,7 @@ import util.Util;
 
 public class LocalMailBean implements Serializable {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
-	public static final int FOR_INTERNET_SERVER = 0;
-	public static final int FOR_LOCAL_SERVER = 1;
-	public final int ATTACHMENTS_CAPACITY = 3;
 
 	private int attachmentCounter = 0;
 	private String subject;
@@ -22,7 +16,7 @@ public class LocalMailBean implements Serializable {
 	private String sender;
 	private String addressee;
 	private Timestamp sendTime;
-	private File[] attachmentsForLocalServer = new File[ATTACHMENTS_CAPACITY];
+	private File[] attachmentsForLocalServer = new File[Constant.ATTACHMENTS_CAPACITY];
 	private String attachmentNames;
 	private String attachmentLocations;
 	private int id;
@@ -41,7 +35,7 @@ public class LocalMailBean implements Serializable {
 	}
 
 	public boolean attachmentsAreFull() {
-		return this.attachmentCounter >= ATTACHMENTS_CAPACITY;
+		return this.attachmentCounter >= Constant.ATTACHMENTS_CAPACITY;
 	}
 
 	public String getAddressee() {
@@ -89,7 +83,7 @@ public class LocalMailBean implements Serializable {
 	}
 
 	public void removeAllExtraItems() {
-		attachmentsForLocalServer = new File[ATTACHMENTS_CAPACITY];
+		attachmentsForLocalServer = new File[Constant.ATTACHMENTS_CAPACITY];
 		attachmentCounter = 0;
 	}
 
