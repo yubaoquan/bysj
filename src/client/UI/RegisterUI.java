@@ -21,7 +21,10 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+
+import com.mysql.jdbc.StringUtils;
 
 import beans.Constant;
 import client.net.up.Transmitter;
@@ -42,8 +45,8 @@ public class RegisterUI extends JFrame {
 	private JLabel passwordAgainWarningLabel = new JLabel("", Label.LEFT);
 
 	private JTextField usernameTextField = new JTextField(20);
-	private JTextField passwordTextField = new JTextField(20);
-	private JTextField passwordAgainTextField = new JTextField(20);
+	private JPasswordField passwordTextField = new JPasswordField(20);
+	private JPasswordField passwordAgainTextField = new JPasswordField(20);
 
 	private JButton confirmButton = new JButton("confirm");
 	private JButton resetButton = new JButton("reset");
@@ -216,23 +219,24 @@ public class RegisterUI extends JFrame {
 		public void focusLost(FocusEvent e) {
 			username = ((JTextField) e.getComponent()).getText();
 			out.println("username: " + username);
-			
-			StringBuffer request = new StringBuffer();
-			request.append(Constant.FIND_USER_NAME);
-			request.append(" ");
-			request.append(username);
-			transmitter.sendRequest(request.toString());
-			String response = transmitter.receiveResponse();
-			if (Integer.valueOf(response) == Constant.FOUND) {
-				out.println("user name exists.");
-				warningLabel.setText("Sorry,User name already exists.");
-				warningLabel.setForeground(Color.RED);
-				usernameOK = false;
-			} else {
-				out.println("user name not exist.");
-				warningLabel.setText("Congratulations! You can use this user name");
-				warningLabel.setForeground(Color.GREEN);
-				usernameOK = true;
+			if (!StringUtils.isEmptyOrWhitespaceOnly(username)) {
+				StringBuffer request = new StringBuffer();
+				request.append(Constant.FIND_USER_NAME);
+				request.append(" ");
+				request.append(username);
+				transmitter.sendRequest(request.toString());
+				String response = transmitter.receiveResponse();
+				if (Integer.valueOf(response) == Constant.FOUND) {
+					out.println("user name exists.");
+					warningLabel.setText("Sorry,User name already exists.");
+					warningLabel.setForeground(Color.RED);
+					usernameOK = false;
+				} else {
+					out.println("user name not exist.");
+					warningLabel.setText("Congratulations! You can use this user name");
+					warningLabel.setForeground(Color.GREEN);
+					usernameOK = true;
+				}
 			}
 		}
 	}

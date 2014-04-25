@@ -96,25 +96,6 @@ public class URLLabel extends JLabel implements MouseListener {
 
 	}
 
-	/*
-	 * private void downloadAttachment(AttachmentBean attachment) {
-	 * out.println("download attachment"); String fileName =
-	 * Util.replaceIllegalCharacters(attachment.getSubject()); String folderPath
-	 * = ReceiveMail.getAttachmentFolderPath(); String filePath = folderPath +
-	 * File.separator + fileName; File file = new File(filePath);
-	 * 
-	 * try { file.createNewFile(); InputStream is = null; if
-	 * (attachment.getMailID() != -1) {//From local mail. UserBean owner = new
-	 * UserBean(); owner.setUserName(attachment.getOwner());
-	 * Transmitter.getInstance(owner); } else {// From Internet mail. is=
-	 * attachment.getPart().getInputStream(); }
-	 * 
-	 * FileStreamSaver fileStreamSaver = new FileStreamSaver(file, is);
-	 * fileStreamSaver.storeFile(); fileStreamSaver.closeStream();
-	 * JOptionPane.showMessageDialog(itemListUI, (String) "附件下载完成.文件位置： "
-	 * +filePath + ".", "完成", JOptionPane.INFORMATION_MESSAGE); } catch
-	 * (Exception e1) { e1.printStackTrace(); } }
-	 */
 
 	@Override
 	public void mousePressed(MouseEvent e) {

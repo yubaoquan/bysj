@@ -33,7 +33,6 @@ public class Transmitter {
 	private Properties props;
 	private Session session;
 	private Transport transport = null;
-	private boolean loginSucceed = false;
 	private UserBean user = null;
 	private boolean sendSucceed = false;
 	private MimeMessage msg;
@@ -55,61 +54,56 @@ public class Transmitter {
 	
 	public Transmitter(UserBean user) {
 		this.user = user;
-		props = new Properties();
-		props.setProperty("mail.smtp.auth", "true");
-		props.setProperty("mail.transport.protocol", "smtp");
-		session = Session.getDefaultInstance(props);
-		msg = new MimeMessage(session);
+		if (!user.isLocalServerEnabled()) {
+			props = new Properties();
+			props.setProperty("mail.smtp.auth", "true");
+			props.setProperty("mail.transport.protocol", "smtp");
+			session = Session.getDefaultInstance(props);
+			msg = new MimeMessage(session);
+		}
 		try {
-			initConnect();
-			transport = session.getTransport();
+			if (user.isLocalServerEnabled()) {
+				initConnect();
+			} else {
+				transport = session.getTransport();
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	public boolean loginServerSucceed() {
-		return this.loginSucceed;
-	}
-
 	public boolean loginToServer() {
-		boolean loginSucceed;
 		if (user.isLocalServerEnabled()) {
-			loginSucceed = loginToLocalServer();
+			return loginToLocalServer();
 		} else {
-            loginSucceed = loginToInternetServer();
+            return loginToInternetServer();
         }
-		return loginSucceed;
 	}
 
 	private boolean loginToInternetServer() {
-		boolean loginSucceed;
 		try {
-		    this.transport.connect(user.getSmtpServerName(), user.getUserName(), user.getPassword());
-		    loginSucceed = true;
+		    transport.connect(user.getSmtpServerName(), user.getUserName(), user.getPassword());
 		} catch (AuthenticationFailedException e) {
 		    System.out.println("认证失败!用户名或密码错误");
-		    loginSucceed = false;
+		    e.printStackTrace();
 		    return false;
 		} catch (MessagingException e) {
 		    e.printStackTrace();
-		    loginSucceed = false;
 		    return false;
 		}
-		return loginSucceed;
+		return true;
 	}
 
 	private boolean loginToLocalServer() {
-		boolean loginSucceed = false;
 		String requestString = Constant.USER_AUTHENTICATION + " " + user.getUserName().trim() + " " + user.getPassword().trim();
 		sendRequest(requestString);
-
 		System.out.println("send finished!");
 		String responseString = receiveResponse();
 		if (responseString.equals(Constant.LOGIN_SUCCEED)) {
-			loginSucceed = true;
+			return true;
+		} else {
+			return false;
 		}
-		return loginSucceed;
 	}
 
 	private void initConnect() throws IOException {

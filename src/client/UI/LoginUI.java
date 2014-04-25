@@ -232,6 +232,6 @@ public class LoginUI {
 	}
 	
 	public static void main(String[] args) {
-		new LoginUI().initUI();;
+		new LoginUI().initUI();
 	}
 }

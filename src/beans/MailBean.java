@@ -20,13 +20,12 @@ public class MailBean implements Serializable, LabelBean{
 
 	private static final long serialVersionUID = 1L;
 	
-	
 	//common fields 
 	private int attachmentCounter = 0;
 	private String subject;
 	private String text;
 	
-	// the fields below are used for mail servers on the internet
+	// the fields below are used for mail servers on the Internet
 	private Multipart multipart;
 	private MimeBodyPart[] attachmentsForInternetServer = new MimeBodyPart[Constant.ATTACHMENTS_CAPACITY];
 	private InternetAddress[] internetAddressees = new InternetAddress[10];

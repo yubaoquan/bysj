@@ -55,7 +55,7 @@ public class ReceiveMail {
 	public ReceiveMail(MimeMessage mimeMessage) {
 		this.mimeMessage = mimeMessage;
 		try {
-			this.getMailContent(mimeMessage);
+			this.parsePart(mimeMessage);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -157,7 +157,7 @@ public class ReceiveMail {
 	/**
 	 * 解析邮件，把得到的邮件内容保存到一个StringBuffer对象中，解析邮件 主要是根据MimeType类型的不同执行不同的操作，一步一步的解析
 	 */
-	public void getMailContent(Part part) throws Exception {
+	public void parsePart(Part part) throws Exception {
 		String contentType = part.getContentType();
 		int nameIndex = contentType.indexOf("name");
 		boolean conname = false;
@@ -176,10 +176,10 @@ public class ReceiveMail {
 			int counts = multipart.getCount();
 
 			for (int i = 0; i < counts; i++) {
-				getMailContent(multipart.getBodyPart(i));
+				parsePart(multipart.getBodyPart(i));
 			}
 		} else if (part.isMimeType("message/rfc822")) {
-			getMailContent((Part) part.getContent());
+			parsePart((Part) part.getContent());
 		}
 	}
 

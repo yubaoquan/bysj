@@ -43,7 +43,7 @@ public class LoginThread extends Thread {
 			loginUI.configureOthercomponents();
 			loginUI.serverNameSelector.setSelectedIndex(3);
 		} else {
-			//Use for internet test;
+			//Use for Internet test;
 			li.setUserName("18080922587@163.com");
 			li.setPassword("wocao123");
 			li.setSmtpServerName("smtp.163.com");
