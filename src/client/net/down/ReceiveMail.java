@@ -281,6 +281,12 @@ public class ReceiveMail {
 		new ItemListUI(mails, this);
 	}
 
+	/**
+	 * 此方法用户将用户的邮件从Message形式转换为本邮件代理系统可识别的MailBean形式，并保存到List中用户后续展示
+	 * @param messages 用户在邮件服务器上的邮箱中获取到了Message数组，代表用户的所有邮件
+	 * @return 存储用户所有的邮件的链表
+	 * @throws Exception
+	 */
 	private List<MailBean> receiveAndSaveAsMailBeans(Message[] messages) throws Exception {
 		ReceiveMail pmm = null;
 		List<MailBean> mails = new ArrayList<>();
@@ -299,6 +305,12 @@ public class ReceiveMail {
 		return mails;
 	}
 
+	/**
+	 * 由ReceiveMail中提取邮件信息，填入MailBean的转换逻辑
+	 * @param pmm 由Message对象转换成的ReceiveMail对象
+	 * @param mail需要填充的MailBean对象
+	 * @throws Exception
+	 */
 	private void fillMailBean(ReceiveMail pmm, MailBean mail) throws Exception {
 		mail.setSender(pmm.getFrom());
 		mail.setAddressee(pmm.getMailAddress("to"));
@@ -316,6 +328,12 @@ public class ReceiveMail {
 		mail.setAttachmentNames(attachmentNameString);
 	}
 
+	/**
+	 * 此方法用与从邮件中提取附件，并将附件转换成本系统可以识别的AttachmentBean，最后将AttachmentBean填充到List中返回
+	 * @param part
+	 * @return
+	 * @throws Exception
+	 */
 	public ArrayList<AttachmentBean> collectAttachmentBeans(Part part) throws Exception {
 		ArrayList<AttachmentBean> attachments = new ArrayList<>();
 		String attachmentName = "";
