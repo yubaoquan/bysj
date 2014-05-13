@@ -73,6 +73,10 @@ public class ResponseThread implements Runnable {
 		}
 	}
 
+	/**
+	 * 此方法用于从客户端获取请求信息
+	 * @return
+	 */
 	private String receiveRequest() {
 		Util.println("receive request");
 		String request = null;
@@ -105,6 +109,10 @@ public class ResponseThread implements Runnable {
 		return request;
 	}
 
+	/**
+	 * 此方法用于向客户端发送响应信息
+	 * @param responseString 响应信息的报文
+	 */
 	private void sendResponse(String responseString) {
 		Util.println("send response: " + responseString);
 		try {
