@@ -13,6 +13,7 @@ import javax.mail.Multipart;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMultipart;
+import javax.mail.internet.MimeUtility;
 
 import util.Util;
 
@@ -26,7 +27,7 @@ public class MailBean implements Serializable, LabelBean{
 	private String text;
 	
 	// the fields below are used for mail servers on the Internet
-	private Multipart multipart;
+	public Multipart multipart;
 	private MimeBodyPart[] attachmentsForInternetServer = new MimeBodyPart[Constant.ATTACHMENTS_CAPACITY];
 	private InternetAddress[] internetAddressees = new InternetAddress[10];
 	private ArrayList<AttachmentBean> attachmentBeans;
@@ -149,10 +150,9 @@ public class MailBean implements Serializable, LabelBean{
 	}
 	
 	private void initMIMEBodyPart(MimeBodyPart mbp, File file) throws IOException, MessagingException {
-		mbp.setText("text");// 没有这一句的话,发送的附件会显示成一堆文本.
 		FileDataSource fds = new FileDataSource(file.getAbsolutePath());
 		mbp.setDataHandler(new DataHandler(fds));
-		mbp.setFileName(fds.getName());
+		mbp.setFileName(MimeUtility.encodeText(fds.getName()));
 	}
 
 	public void removeAllExtraItems() {

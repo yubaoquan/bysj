@@ -10,8 +10,11 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.sql.Timestamp;
 
+import javax.mail.BodyPart;
+import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -305,7 +308,15 @@ public class EditMailUI {
 	private void fillMailForInternetServer() throws AddressException {
 		System.out.println("Fill mail for Internet server");
 		fillMailAddressees();
-		if (mail.getAttachmentAmount() > 0) {
+		BodyPart mdp = new MimeBodyPart();// 新建一个存放信件内容的BodyPart对象  
+        try {
+        	// 给BodyPart对象设置内容和格式/编码方式 
+			mdp.setContent(EditMailUI.this.mainTextArea.getText(), "text/html;charset=UTF-8");
+			mail.multipart.addBodyPart(mdp);
+        } catch (MessagingException e) {
+			e.printStackTrace();
+		}
+        if (mail.getAttachmentAmount() > 0) {
 			mail.addAttachmentsToMultipart();
 		}
 	}

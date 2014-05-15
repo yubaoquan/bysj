@@ -234,6 +234,7 @@ public class Transmitter {
 			closeConnection();
 			return;
 		}
+		msg = new MimeMessage(session);
 		this.sendSucceed = true;
 	}
 
